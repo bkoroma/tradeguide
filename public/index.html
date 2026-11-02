@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>TradeGuide — Stock &amp; Crypto Signals with Risk</title>
+  <meta name="description" content="Technical buy/sell signals, risk scoring and trade plans for stocks and crypto. Educational tool, not financial advice.">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="demoBanner" class="demo-banner" hidden>
+    DEMO MODE — the market-data API isn't reachable, so prices are <b>synthetic</b>. Deploy with the included server/functions for live data.
+  </div>
+
+  <header class="top">
+    <a class="brand" href="#" data-view="analyze" aria-label="TradeGuide home">
+      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M6 21l6-6 5 4 9-10" stroke="#06110c" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>TradeGuide</span>
+    </a>
+    <div class="search">
+      <input id="search" type="search" placeholder="Search stock or crypto — AAPL, NVDA, BTC…" autocomplete="off" spellcheck="false" aria-label="Search symbols">
+      <ul id="searchResults" class="search-results" role="listbox" hidden></ul>
+    </div>
+    <div class="seg" id="intervalSeg" role="group" aria-label="Timeframe">
+      <button data-interval="1h">1H</button><button data-interval="1d" class="on">1D</button><button data-interval="1wk">1W</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-view="analyze" class="on"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/></svg>Analyze</button>
+    <button data-view="scanner"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg>Scanner</button>
+    <button data-view="portfolio"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Portfolio</button>
+    <button data-view="bot"><svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/></svg>Bot</button>
+    <button data-view="watchlist"><svg viewBox="0 0 24 24"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>Watchlist</button>
+    <button data-view="learn"><svg viewBox="0 0 24 24"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg>Learn</button>
+  </nav>
+
+  <main>
+    <!-- ANALYZE -->
+    <section id="view-analyze" class="view on">
+      <div id="analyzeEmpty" class="empty">
+        <h1>Find the setup. Know the risk. Plan the exit.</h1>
+        <p>Search any stock, ETF or coin. TradeGuide scores 7 technical factors into a Buy / Hold / Sell signal, grades risk 1–10, builds a stop-loss and target plan, and back-tests the signal on that exact chart so you can see whether it has actually worked.</p>
+        <div class="chips" id="quickPicks"></div>
+      </div>
+      <div id="analyzeLoading" class="loading" hidden><div class="spinner"></div><span>Crunching the chart…</span></div>
+      <div id="analyzeError" class="error-box" hidden></div>
+
+      <div id="analysis" hidden>
+        <div class="quote">
+          <div>
+            <div class="q-sym"><span id="qSym"></span><span id="qCls" class="cls"></span><button id="starBtn" class="star" aria-label="Add to watchlist">☆</button></div>
+            <div class="q-name" id="qName"></div>
+          </div>
+          <div class="q-right">
+            <div class="q-price mono" id="qPrice"></div>
+            <div class="q-chg mono" id="qChg"></div>
+          </div>
+        </div>
+        <div class="q-meta"><span id="qMkt" class="mkt"></span><span id="qMeta"></span></div>
+
+        <article class="card mypos" id="myPos" hidden>
+          <div class="card-h"><h2>Your position</h2><span class="pill muted" id="myPosSrc"></span></div>
+          <div class="mp-grid" id="myPosGrid"></div>
+          <p class="mp-advice" id="myPosAdvice"></p>
+        </article>
+
+        <div class="grid-2">
+          <article class="card verdict" id="verdictCard">
+            <div class="card-h"><h2>Signal</h2><span class="pill" id="confPill"></span></div>
+            <div class="v-label" id="vLabel"></div>
+            <div class="scale"><div class="scale-track"><span class="scale-mark" id="vMark"></span></div>
+              <div class="scale-legend"><span>Strong Sell</span><span>Hold</span><span>Strong Buy</span></div></div>
+            <div class="v-score mono" id="vScore"></div>
+            <p class="v-summary" id="vSummary"></p>
+          </article>
+
+          <article class="card risk" id="riskCard">
+            <div class="card-h"><h2>Risk</h2><span class="pill" id="riskPill"></span></div>
+            <div class="risk-meter"><div class="risk-num mono" id="riskNum"></div><div class="risk-bars" id="riskBars"></div></div>
+            <dl class="metrics" id="riskMetrics"></dl>
+          </article>
+        </div>
+
+
+        <article class="card history" id="historyCard">
+          <div class="card-h"><h2>What this asset's history says</h2><span class="pill" id="histPill"></span></div>
+          <div class="hist-decision" id="histDecision"></div>
+          <ul class="evidence" id="histEvidence"></ul>
+          <p class="note" id="histNote"></p>
+        </article>
+
+        <article class="card chart-card">
+          <div class="card-h"><h2>Chart</h2>
+            <div class="legend"><i class="lg-50"></i>50-MA <i class="lg-200"></i>200-MA <i class="lg-buy"></i>past buy <i class="lg-sell"></i>past sell</div>
+          </div>
+          <div id="chart" class="chart"></div>
+          <div class="sub-h">RSI (14)</div>
+          <div id="rsiChart" class="chart-sm"></div>
+        </article>
+
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-h"><h2>Why this signal</h2></div>
+            <ul class="factors" id="factors"></ul>
+          </article>
+
+          <article class="card plan">
+            <div class="card-h"><h2 id="planTitle">Trade plan</h2></div>
+            <div class="levels" id="levels"></div>
+            <div class="sizer">
+              <label>Account size ($)<input id="accInput" type="number" min="100" step="100" inputmode="decimal"></label>
+              <label>Risk per trade (%)<input id="riskInput" type="number" min="0.1" max="5" step="0.1" inputmode="decimal"></label>
+            </div>
+            <div class="size-out" id="sizeOut"></div>
+            <p class="note" id="planNote"></p>
+          </article>
+        </div>
+
+
+        <article class="card profile" id="profileCard">
+          <div class="card-h"><h2>Stock vs crypto — what you're trading</h2><span class="cls" id="profCls"></span></div>
+          <p class="prof-what" id="profWhat"></p>
+          <div class="volgauge" id="profVol"></div>
+          <div class="table-wrap"><table class="compare" id="profCompare"></table></div>
+          <div class="grid-2 prof-lists">
+            <div><h3>What moves it</h3><ul id="profDrivers"></ul></div>
+            <div><h3>Risks specific to this market</h3><ul id="profRisks"></ul></div>
+          </div>
+          <p class="prof-tip" id="profTip"></p>
+        </article>
+
+        <article class="card">
+          <div class="card-h"><h2>Risk warnings</h2></div>
+          <ul class="warnings" id="warnings"></ul>
+        </article>
+
+        <article class="card">
+          <div class="card-h"><h2>Has this signal worked here?</h2><span class="pill muted" id="btRange"></span></div>
+          <div class="bt-grid" id="btGrid"></div>
+          <div id="equityChart" class="chart-sm"></div>
+          <details class="trades"><summary>Trade history</summary><div class="table-wrap"><table id="tradeTable"></table></div></details>
+          <p class="note">Simulated long-only: buy when the score crosses +20, sell when it drops to −20 or a trailing ATR stop is hit; 0.1% fee per side. Past results do not predict future results.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- SCANNER -->
+    <section id="view-scanner" class="view">
+      <div class="view-h">
+        <h1>Market scanner</h1>
+        <p>Scores a basket of liquid assets with the same engine and ranks them. Tap a row for the full analysis.</p>
+      </div>
+      <div class="markets" id="markets"></div>
+      <div class="toolbar">
+        <div class="seg" id="scanSet">
+          <button data-set="stocks" class="on">Stocks</button><button data-set="crypto">Crypto</button><button data-set="all">Both</button><button data-set="watchlist">Watchlist</button>
+        </div>
+        <label class="check"><input type="checkbox" id="onlyBuys"> Buy signals only</label>
+        <label class="check"><input type="checkbox" id="lowRisk"> Risk ≤ 6</label>
+        <button class="btn" id="scanBtn">Run scan</button>
+      </div>
+      <div class="progress" id="scanProgress" hidden><span></span></div>
+      <div class="table-wrap"><table class="scan" id="scanTable"></table></div>
+    </section>
+
+
+    <!-- PORTFOLIO -->
+    <section id="view-portfolio" class="view">
+      <div class="view-h">
+        <h1>My portfolio</h1>
+        <p>Your real positions from your brokerage, each scored with TradeGuide's signal and risk. Read-only — TradeGuide cannot place or change trades.</p>
+      </div>
+
+      <div id="pfLocked" class="card lock">
+        <h2>Unlock your portfolio</h2>
+        <p>Enter the private access code you set as <code>APP_ACCESS_TOKEN</code> on your server. It keeps anyone else who finds your app's URL from seeing your holdings.</p>
+        <form id="unlockForm" autocomplete="off">
+          <input id="accessCode" type="password" placeholder="Access code" autocomplete="current-password" required minlength="12">
+          <label class="check"><input type="checkbox" id="rememberCode"> Remember on this device</label>
+          <button class="btn" type="submit">Unlock</button>
+        </form>
+        <div class="error-box" id="unlockErr" hidden></div>
+        <p class="note">No server yet? <button class="linkbtn" id="sampleBtn" type="button">Preview with a sample portfolio</button></p>
+      </div>
+
+      <div id="pfOpen" hidden>
+        <div class="pf-bar">
+          <div class="providers" id="providers"></div>
+          <div class="pf-actions">
+            <button class="btn ghost" id="pfRefresh">Refresh</button>
+            <button class="btn ghost" id="pfLock">Lock</button>
+          </div>
+        </div>
+        <article class="card connect" id="connectCard" hidden>
+          <div class="card-h"><h2>Connect a brokerage</h2><span class="pill muted">read-only · via SnapTrade</span></div>
+          <p class="note" style="margin-top:0">You sign in on your broker's / SnapTrade's secure page — TradeGuide never sees your password and cannot trade.</p>
+          <div class="brokers" id="brokerBtns"></div>
+          <div class="pf-actions" style="margin-top:10px"><button class="btn ghost" id="allBrokers">All brokerages…</button><button class="btn ghost" id="pfSync" title="Ask your brokers for fresh holdings now">Sync from brokers</button></div>
+        </article>
+
+        <article class="card live" id="liveCard">
+          <div class="card-h"><h2>Live trades</h2><span class="livedot" id="liveDot">connecting…</span></div>
+          <div class="providers" id="liveSources"></div>
+          <div class="seg" id="liveFilter" style="margin:10px 0"><button data-f="all" class="on">All</button><button data-f="filled">Fills</button><button data-f="open">Open orders</button></div>
+          <ul class="feed" id="liveFeed"><li class="empty-feed">Waiting for trades…</li></ul>
+          <p class="note">Read-only. Speed depends on the broker: Alpaca &amp; Coinbase stream instantly; SnapTrade trade-detection is seconds for Webull/tastytrade and ~5 min for Robinhood/Schwab/E*TRADE; otherwise orders are polled.</p>
+        </article>
+
+        <div class="demo-note" id="pfDemo" hidden>Sample portfolio — not your real holdings. Prices are live when the server is deployed, synthetic otherwise.</div>
+        <div class="error-box" id="pfErr" hidden></div>
+        <div class="progress" id="pfProgress" hidden><span></span></div>
+        <div class="tiles" id="pfTiles"></div>
+        <article class="card" id="allocCard" hidden>
+          <div class="card-h"><h2>Stocks vs crypto in your portfolio</h2></div>
+          <div class="alloc-bar" id="allocBar"></div>
+          <div class="alloc-grid" id="allocGrid"></div>
+        </article>
+        <article class="card" id="pfAlertsCard" hidden>
+          <div class="card-h"><h2>Needs attention</h2></div>
+          <ul class="warnings" id="pfAlerts"></ul>
+        </article>
+        <article class="card">
+          <div class="card-h"><h2>Positions</h2><span class="pill muted" id="pfAsOf"></span></div>
+          <div class="table-wrap"><table class="scan" id="pfTable"></table></div>
+          <p class="note">"Suggested action" is TradeGuide's technical read on each holding, not advice. Trailing stop = price − 3×ATR.</p>
+        </article>
+        <article class="card">
+          <div class="card-h"><h2>Accounts</h2></div>
+          <div class="table-wrap"><table id="acctTable"></table></div>
+        </article>
+        <div class="empty small" id="pfEmpty" hidden></div>
+      </div>
+    </section>
+
+
+    <!-- BOT -->
+    <section id="view-bot" class="view">
+      <div class="view-h">
+        <h1>Alert bot</h1>
+        <p>Scans your list on a schedule, learns each asset's own history, and sends you a BUY / SELL / EXIT alert only when the signal and the historical evidence agree. It never places trades.</p>
+      </div>
+
+      <div id="botLocked" class="card lock">
+        <h2>Connect to your bot</h2>
+        <p>Enter your access code (<code>APP_ACCESS_TOKEN</code>) to see the bot's status, alerts and track record.</p>
+        <form id="botUnlock" autocomplete="off">
+          <input id="botCode" type="password" placeholder="Access code" required minlength="12" autocomplete="current-password">
+          <button class="btn" type="submit">Unlock</button>
+        </form>
+        <div class="error-box" id="botErr" hidden></div>
+        <p class="note">Or <button class="linkbtn" id="botPreviewBtn" type="button">run a preview scan in your browser</button> — same learning engine, no alerts sent.</p>
+      </div>
+
+      <div id="botOpen" hidden>
+        <div class="pf-bar">
+          <div class="providers" id="botChannels"></div>
+          <div class="pf-actions">
+            <button class="btn ghost" id="botTest">Send test alert</button>
+            <button class="btn" id="botRun">Run scan now</button>
+          </div>
+        </div>
+        <div class="error-box" id="botMsg" hidden></div>
+        <div class="tiles" id="botTiles"></div>
+        <article class="card" id="openCard" hidden>
+          <div class="card-h"><h2>Open alerts (paper-tracked)</h2></div>
+          <div class="table-wrap"><table id="openTable"></table></div>
+        </article>
+        <article class="card">
+          <div class="card-h"><h2>Recent alerts</h2></div>
+          <ul class="alerts" id="botAlerts"></ul>
+        </article>
+      </div>
+
+      <div class="progress" id="botProgress" hidden><span></span></div>
+      <article class="card" id="decCard" hidden>
+        <div class="card-h"><h2 id="decTitle">Latest scan</h2><span class="pill muted" id="decMeta"></span></div>
+        <div class="seg" id="decFilter" style="margin-bottom:10px"><button data-f="all" class="on">All</button><button data-f="stock">Stocks &amp; ETFs</button><button data-f="crypto">Crypto</button></div>
+        <div class="table-wrap"><table class="scan" id="decTable"></table></div>
+        <p class="note">BUY needs: signal above the learned buy line, ≥2 of 3 checks (✓ model on unseen data · ✓ past analog readings · ✓ tuned rules on unseen data), and risk within your limit. WATCH = bullish but the evidence isn't there.</p>
+      </article>
+    </section>
+
+    <!-- WATCHLIST -->
+    <section id="view-watchlist" class="view">
+      <div class="view-h"><h1>Watchlist</h1><p>Saved on this device. Tap ☆ on any analysis to add it. Signal flips are highlighted.</p></div>
+      <div id="watchEmpty" class="empty small">Nothing saved yet.</div>
+      <div class="table-wrap"><table class="scan" id="watchTable"></table></div>
+    </section>
+
+    <!-- LEARN -->
+    <section id="view-learn" class="view prose">
+      <h1>How TradeGuide works</h1>
+      <h2>The signal (−100 to +100)</h2>
+      <p>Seven factors each vote between −1 (bearish) and +1 (bullish), weighted and averaged:</p>
+      <ul>
+        <li><b>Trend (25%)</b> — price vs the 50- and 200-period averages, their alignment and slope, scaled by ADX trend strength.</li>
+        <li><b>MACD momentum (15%)</b> — direction and acceleration of momentum, crossovers.</li>
+        <li><b>RSI (15%)</b> — healthy momentum vs overbought/oversold extremes.</li>
+        <li><b>Breakout (15%)</b> — where price sits in its recent 20-bar range; breakouts and breakdowns.</li>
+        <li><b>Bollinger %B (10%)</b> — how stretched price is from its average.</li>
+        <li><b>Stochastic (10%)</b> — short-term turns in oversold/overbought zones.</li>
+        <li><b>Volume / OBV (10%)</b> — whether volume confirms the move.</li>
+      </ul>
+      <p><b>+50 or more</b> Strong Buy · <b>+20</b> Buy · <b>−20 to +20</b> Hold/Wait · <b>−20</b> Sell · <b>−50 or less</b> Strong Sell. <b>Confidence</b> is how many factors agree, reduced when risk is extreme.</p>
+
+      <h2>The risk score (1–10)</h2>
+      <p>Built from annualised volatility, worst drawdown in the last year, liquidity (dollar volume), asset class (crypto adds risk), penny-stock status and beta. Key terms:</p>
+      <ul>
+        <li><b>Volatility</b> — how much price typically swings in a year. 20% is calm for a stock; 80%+ is normal for many coins.</li>
+        <li><b>Max drawdown</b> — the biggest peak-to-trough fall in the period. Ask yourself whether you could sit through it.</li>
+        <li><b>VaR 95%</b> — on 1 bar in 20 you should expect to lose at least this much.</li>
+        <li><b>Beta</b> — sensitivity to the market (S&amp;P 500 for stocks, Bitcoin for crypto). 1.5 means roughly 1.5× the market's moves.</li>
+        <li><b>ATR</b> — average true range, the typical size of one bar. Stops are set in multiples of ATR so normal noise doesn't knock you out.</li>
+      </ul>
+
+
+      <h2>Stocks vs crypto — they are different markets</h2>
+      <div class="table-wrap"><table class="compare learn-compare">
+        <thead><tr><th></th><th><span class="cls c-stock">STOCK</span></th><th><span class="cls c-crypto">CRYPTO</span></th></tr></thead>
+        <tbody>
+          <tr><td>What you own</td><td>A share of a company with earnings and assets</td><td>A digital token — no company, earnings or dividends</td></tr>
+          <tr><td>Trading hours</td><td>Mon–Fri 9:30–16:00 ET (+ thin extended hours)</td><td>24/7/365</td></tr>
+          <tr><td>Normal yearly volatility</td><td>15–45%</td><td>40–100%+</td></tr>
+          <tr><td>Typical worst year drop</td><td>20–40% (single stock), ~25% (S&amp;P 500)</td><td>50–80% has happened repeatedly</td></tr>
+          <tr><td>What drives price</td><td>Earnings, rates, economy, sector</td><td>Bitcoin's trend, liquidity, regulation, adoption</td></tr>
+          <tr><td>Gap risk</td><td>Overnight, weekends, earnings</td><td>No closing bell — moves happen while you sleep</td></tr>
+          <tr><td>Protection</td><td>SEC/FINRA; SIPC if the broker fails</td><td>No SIPC/FDIC; exchange &amp; custody risk</td></tr>
+          <tr><td>TradeGuide defaults</td><td>Stop 2×ATR · risk 1% per trade · bot max risk 7</td><td>Stop 2.5×ATR · risk 0.5% per trade · bot max risk 9</td></tr>
+          <tr><td>Benchmark</td><td>S&amp;P 500 (SPY)</td><td>Bitcoin (BTC-USD)</td></tr>
+        </tbody></table></div>
+      <p><b>ETFs</b> are baskets that trade like stocks — usually calmer than single stocks. <b>Crypto-linked stocks and ETFs</b> (COIN, MSTR, miners, spot-bitcoin ETFs like IBIT) trade on the stock market's hours but swing like crypto; TradeGuide flags them.</p>
+
+      <h2>The trade plan</h2>
+      <p>The stop goes ~2 ATR away (or just past the recent swing low), targets at 2× and 3× the risk. Position size = <i>account × risk %</i> ÷ <i>distance to stop</i>, capped at 25% of the account. Risking 1% per trade means 10 losses in a row costs about 10% — survivable.</p>
+
+      <h2>Rules that matter more than any signal</h2>
+      <ol>
+        <li>Decide your exit before you enter. Put the stop in the broker, not in your head.</li>
+        <li>Risk 0.5–2% of the account per trade, never more.</li>
+        <li>Don't buy a "Strong Buy" with Extreme risk using money you need.</li>
+        <li>Check earnings dates and news — technicals can't see them coming.</li>
+        <li>Look at the back-test card. If the signal has lost money on this chart, it's telling you something.</li>
+        <li>Paper-trade a strategy for a few weeks before using real money.</li>
+      </ol>
+
+      <h2>Limits — read this</h2>
+      <p>Technical signals describe what price has done, not what it will do. No indicator, AI score or app reliably predicts markets, and most short-term traders lose money. Data can be delayed or wrong. TradeGuide is an educational and decision-support tool; it is <b>not</b> financial advice and is not a registered investment adviser. You are responsible for your trades.</p>
+    </section>
+  </main>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <footer class="foot">Educational tool · not financial advice · data may be delayed · <span id="engineVer"></span></footer>
+
+  <dialog id="disclaimer">
+    <h2>Before you use TradeGuide</h2>
+    <p>TradeGuide generates <b>technical-analysis signals</b> and <b>risk estimates</b> from historical prices. They are educational, not personalised financial advice.</p>
+    <ul>
+      <li>Signals can be wrong. Back-tested results do not guarantee future results.</li>
+      <li>Stocks and especially crypto can lose most of their value quickly.</li>
+      <li>Only trade money you can afford to lose. Consider a licensed adviser for your situation.</li>
+    </ul>
+    <form method="dialog"><button class="btn" value="ok" id="ackBtn">I understand</button></form>
+  </dialog>
+
+  <script src="vendor/lightweight-charts.standalone.production.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

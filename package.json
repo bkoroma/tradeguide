@@ -1,0 +1,25 @@
+{
+  "name": "tradeguide",
+  "version": "1.4.0",
+  "description": "TradeGuide \u2014 stock & crypto signal, risk and trade-plan PWA",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/*.test.mjs",
+    "setup:snaptrade": "node scripts/snaptrade-setup.mjs",
+    "start:env": "node --env-file=.env server.js",
+    "bot": "node bot/run.mjs",
+    "bot:dry": "node bot/run.mjs --dry --all",
+    "bot:loop": "node bot/run.mjs --loop",
+    "bot:test": "node bot/run.mjs --test"
+  },
+  "dependencies": {
+    "snaptrade-typescript-sdk": "^13.1.14",
+    "ws": "^8.18.0"
+  }
+}

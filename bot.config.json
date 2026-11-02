@@ -1,0 +1,66 @@
+{
+  "interval": "1d",
+  "universe": {
+    "stocks": [
+      "AAPL",
+      "MSFT",
+      "NVDA",
+      "AMZN",
+      "GOOGL",
+      "META",
+      "TSLA",
+      "AMD",
+      "AVGO",
+      "JPM",
+      "V",
+      "NFLX",
+      "COST",
+      "PLTR",
+      "COIN",
+      "SPY",
+      "QQQ"
+    ],
+    "crypto": [
+      "BTC-USD",
+      "ETH-USD",
+      "SOL-USD",
+      "XRP-USD",
+      "BNB-USD",
+      "ADA-USD",
+      "DOGE-USD",
+      "AVAX-USD",
+      "LINK-USD",
+      "LTC-USD"
+    ]
+  },
+  "discover": true,
+  "discoverCount": 15,
+  "includeHoldings": true,
+  "cooldownHours": 72,
+  "account": 10000,
+  "notify": {
+    "buy": true,
+    "sell": true,
+    "exits": true,
+    "watch": false,
+    "digest": true,
+    "digestHourET": 17
+  },
+  "classRules": {
+    "stock": {
+      "maxRisk": 7,
+      "riskPct": 1,
+      "minEvidence": 2
+    },
+    "etf": {
+      "maxRisk": 7,
+      "riskPct": 1,
+      "minEvidence": 2
+    },
+    "crypto": {
+      "maxRisk": 9,
+      "riskPct": 0.5,
+      "minEvidence": 2
+    }
+  }
+}
