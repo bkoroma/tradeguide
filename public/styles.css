@@ -1,6 +1,14 @@
+/* Fonts are self-hosted (no Google Fonts: blocked in some countries, and one fewer third party) */
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/ibm-plex-sans-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url(fonts/ibm-plex-sans-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/ibm-plex-sans-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/ibm-plex-sans-latin-700-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/ibm-plex-mono-latin-600-normal.woff2) format('woff2'); }
 :root {
   --bg: #0b0f14; --bg2: #10161d; --card: #131a22; --line: #1f2a35; --line2: #2a3846;
-  --text: #e6edf3; --muted: #8b9aab; --dim: #5d6c7c;
+  --text: #e6edf3; --muted: #9aa8b8; --dim: #8593a3;
   --accent: #3ddc97; --up: #26c281; --down: #f05252; --warn: #f5a524; --info: #4ea8ff;
   --sbuy: #1fd18a; --buy: #6fdba8; --hold: #c9a227; --sell: #f08a5d; --ssell: #f05252;
   --sans: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, sans-serif;
@@ -245,7 +253,7 @@ dialog .btn { width: 100%; margin-top: 8px; }
 .mkt { display: inline-flex; align-items: center; gap: 6px; margin-right: 8px; font-weight: 600; color: var(--muted); }
 .mkt::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
 .mkt.open { color: var(--up); } .mkt.open::before { background: var(--up); box-shadow: 0 0 0 3px rgba(38,194,129,.2); }
-.mkt.pre, .mkt.post { color: var(--warn); } .mkt.pre::before, .mkt.post::before { background: var(--warn); }
+.mkt.pre, .mkt.post, .mkt.lunch { color: var(--warn); } .mkt.pre::before, .mkt.post::before, .mkt.lunch::before { background: var(--warn); }
 .quote { border-left: 3px solid var(--cls-color, var(--line2)); padding-left: 12px; }
 .profile { border-color: color-mix(in srgb, var(--cls-color, #1f2a35) 40%, #1f2a35); }
 .prof-what { color: #c7d2dd; margin: 0 0 12px; }
@@ -314,6 +322,14 @@ tr.group td { background: var(--bg2); font-family: var(--sans); font-weight: 600
 .toast b { font-family: var(--mono); }
 .toast small { display: block; color: var(--muted); margin-top: 4px; }
 
+/* World clock */
+.mk-card.world { grid-column: 1 / -1; }
+.wc-region h4 { margin: 10px 0 6px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.wc-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.wc { font-size: 12px; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line2); color: var(--muted); cursor: help; }
+.wc.open { color: var(--up); border-color: #1b4632; background: #0f2219; }
+.wc.lunch, .wc.pre { color: var(--warn); border-color: #6b4c0a; }
+
 @media (min-width: 760px) {
   .toasts { bottom: 20px; }
   .markets { grid-template-columns: 1fr 1fr; }
@@ -331,4 +347,14 @@ tr.group td { background: var(--bg2); font-family: var(--sans); font-weight: 600
   .chart { height: 420px; }
   .metrics { gap: 10px 22px; }
 }
+/* Accessibility */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.table-wrap:focus-visible { outline-offset: 0; }
+@media (pointer: coarse) {
+  .seg button { min-height: 36px; min-width: 40px; padding: 8px 12px; }
+  .star, .rm { min-width: 40px; min-height: 40px; }
+  .brand { min-height: 40px; }
+  .chip { padding: 10px 14px; }
+}
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

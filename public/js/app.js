@@ -3,6 +3,8 @@ import { analyze, computeSeries, scoreAt, labelFor, riskReport, tradePlan, fmtPx
 import { getChart, searchSymbols, UNIVERSE, isDemo, broker, access, samplePortfolio, botApi, liveApi } from './data.js';
 import { learnAndDecide } from './learn.js';
 import { classify, PROFILES, marketStatus, classVolatility } from './assets.js';
+import { exchangeOf, EXCHANGES, WORLD, exchangeStatus, hoursText, hoursInViewerTz, formatMoney, normalizeSymbol } from './markets.js';
+const VIEWER_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -35,7 +37,7 @@ function init() {
   $('#accInput').value = state.account;
   $('#riskInput').value = state.riskPct;
 
-  const picks = ['AAPL', 'NVDA', 'TSLA', 'SPY', 'BTC-USD', 'ETH-USD', 'SOL-USD'];
+  const picks = ['AAPL', 'NVDA', 'SPY', 'BTC-USD', 'ETH-USD', 'VOD.L', '0700.HK', '600519.SS', '7203.T', 'SAP.DE', 'RELIANCE.NS', 'SHOP.TO'];
   $('#quickPicks').innerHTML = picks.map((s) => `<button class="chip" data-sym="${s}">${s}</button>`).join('');
   $('#quickPicks').addEventListener('click', (e) => { const s = e.target.closest('[data-sym]')?.dataset.sym; if (s) load(s); });
 
@@ -102,7 +104,7 @@ function setupSearch() {
     t = setTimeout(async () => {
       try { items = await searchSymbols(q); } catch { items = []; }
       if (inp.value.trim() !== q) return;
-      const direct = q.toUpperCase().replace(/[^A-Z0-9.\-=^]/g, '');
+      const direct = normalizeSymbol(q).replace(/[^A-Z0-9.\-=^]/g, '');
       if (direct && !items.some((x) => x.symbol === direct)) items.push({ symbol: direct, name: 'Analyze this symbol', type: '' });
       list.innerHTML = items.map((x, i) => `<li role="option" data-i="${i}"><div><div class="s-sym">${esc(x.symbol)}</div><div class="s-name">${esc(x.name)}${x.exchange ? ' · ' + esc(x.exchange) : ''}</div></div>${x.type === 'INDEX' ? '<span class="s-type">index</span>' : badge(x.symbol, x.assetClass || (x.type === 'CRYPTOCURRENCY' ? 'crypto' : x.type === 'ETF' ? 'etf' : 'stock'), x.name, true)}</li>`).join('');
       list.hidden = !items.length; active = -1;
@@ -129,7 +131,8 @@ function badge(symbol, assetClass, name, small) {
   const c = classify(symbol, assetClass, name);
   return `<span class="cls c-${c.cls}"${small ? ' style="font-size:9.5px;padding:3px 5px"' : ''}>${c.profile.short}</span>${c.cryptoLinked ? ` <span class="cls c-link" title="${esc(c.linkedNote)}"${small ? ' style="font-size:9.5px;padding:3px 5px"' : ''}>₿-LINKED</span>` : ''}`;
 }
-const benchFor = (ac) => (ac === 'crypto' ? 'BTC-USD' : 'SPY');
+// benchmark: Bitcoin for crypto, S&P 500 for US, the home-country ETF for international listings
+const benchFor = (ac, sym = '') => (ac === 'crypto' ? 'BTC-USD' : exchangeOf(sym)?.bench || 'SPY');
 
 async function load(symbol) {
   const id = ++reqId;
@@ -142,7 +145,7 @@ async function load(symbol) {
     if (id !== reqId) return;
     const meta = { ...data.meta, interval: state.interval };
     let bench = null;
-    const bsym = benchFor(meta.assetClass);
+    const bsym = benchFor(meta.assetClass, meta.symbol);
     if (bsym !== meta.symbol) { try { bench = (await getChart(bsym, state.interval)).candles; } catch { /* beta optional */ } }
     if (id !== reqId) return;
     const res = analyze(dedupe(data.candles), meta, bench, { account: state.account, riskPct: state.riskPct });
@@ -173,14 +176,17 @@ function render(res) {
   $('#analysis').hidden = false;
   $('#qSym').textContent = meta.symbol;
   $('#qName').textContent = meta.name;
-  $('#qPrice').textContent = (meta.currency === 'USD' ? '$' : '') + fmtPx(res.price);
+  $('#qPrice').textContent = formatMoney(res.price, meta.currency || 'USD');
+  const usd = meta.fxToUSD && !/^USD$/i.test(meta.currency || 'USD') ? res.price * meta.fxToUSD : null;
+  $('#qPrice').title = usd ? `≈ ${formatMoney(usd, 'USD')}` : '';
   const chg = $('#qChg'); chg.textContent = pctS(res.change) + ` ${meta.interval === '1h' ? '1h' : meta.interval === '1wk' ? '1w' : '1d'}`; chg.className = 'q-chg mono ' + (res.change >= 0 ? 'up' : 'down');
   const asOf = new Date(res.asOf * 1000);
-  $('#qMeta').textContent = `${meta.assetClass.toUpperCase()} · ${meta.exchange || '—'} · ${meta.currency} · last bar ${asOf.toLocaleString([], { dateStyle: 'medium', timeStyle: meta.interval === '1h' ? 'short' : undefined })} · source: ${res.source}`;
+  const exm = meta.assetClass === 'crypto' ? null : exchangeOf(meta.symbol);
+  $('#qMeta').textContent = `${exm ? exm.flag + ' ' : ''}${meta.exchange || exm?.name || '—'} · ${meta.currency}${usd ? ` (≈ ${formatMoney(usd, 'USD')})` : ''} · last bar ${asOf.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: meta.interval === '1h' ? 'short' : undefined })} your time · source: ${res.source}`;
   setStar();
   const C = classify(meta.symbol, meta.assetClass, meta.name);
   $('#qCls').outerHTML = `<span id="qCls">${badge(meta.symbol, meta.assetClass, meta.name)}</span>`;
-  const ms = marketStatus(C.cls);
+  const ms = marketStatus(C.cls, new Date(), meta.symbol);
   $('#qMkt').className = `mkt ${ms.phase}`; $('#qMkt').textContent = ms.label; $('#qMkt').title = ms.detail;
   $('#analysis').style.setProperty('--cls-color', C.profile.color);
   renderProfile(res, C, ms);
@@ -221,7 +227,9 @@ function render(res) {
 }
 
 function renderPlan(res) {
-  const p = tradePlan(res.S, res.signal, res.risk, { account: state.account, riskPct: state.riskPct });
+  const fx = res.meta.fxToUSD > 0 ? res.meta.fxToUSD : 1, cur = res.meta.currency || 'USD';
+  const money = (v) => (fx === 1 && /^USD$/i.test(cur) ? '$' + Math.round(v).toLocaleString() : `${formatMoney(v, cur)} (≈ $${Math.round(v * fx).toLocaleString()})`);
+  const p = tradePlan(res.S, res.signal, res.risk, { account: state.account / fx, riskPct: state.riskPct }); // account is in USD; plan runs in the quote currency
   const s = res.signal, long = p.direction === 'long';
   const title = s.action === 'BUY' ? 'Trade plan — long setup' : s.action === 'SELL' ? 'Plan — exit / protect' : 'Plan — if you enter anyway';
   $('#planTitle').textContent = title;
@@ -236,7 +244,7 @@ function renderPlan(res) {
   const out = $('#sizeOut');
   out.className = 'size-out' + (long ? '' : ' short');
   if (long) {
-    out.innerHTML = `Buy about <b>${qty}</b> ${unitWord} (≈ <b>$${Math.round(p.positionValue).toLocaleString()}</b>). If the stop hits you lose ≈ <b>$${Math.round(p.riskDollars).toLocaleString()}</b> (${state.riskPct}% of account); Target 1 makes ≈ <b>$${Math.round(p.riskDollars * 2).toLocaleString()}</b>.${p.capped ? ' <br><small>Size capped at 25% of account — the stop is tight relative to price.</small>' : ''}`;
+    out.innerHTML = `Buy about <b>${qty}</b> ${unitWord} (≈ <b>${money(p.positionValue)}</b>). If the stop hits you lose ≈ <b>${money(p.riskDollars)}</b> (${state.riskPct}% of account); Target 1 makes ≈ <b>${money(p.riskDollars * 2)}</b>.${p.capped ? ' <br><small>Size capped at 25% of account — the stop is tight relative to price.</small>' : ''}`;
   } else {
     out.innerHTML = `Signal is bearish — TradeGuide does not suggest opening a new long. If you <b>hold</b>, consider tightening your stop or trimming. Short-selling and inverse products carry unlimited/compounding risk and are for experienced traders only.`;
   }
@@ -361,7 +369,7 @@ async function refreshWatch() {
 async function scanSymbols(list, onProgress) {
   const out = []; let done = 0;
   const benches = {};
-  const getBench = async (ac) => { const b = benchFor(ac); if (!(b in benches)) benches[b] = getChart(b, state.interval).then((d) => d.candles).catch(() => null); return benches[b]; };
+  const getBench = async (ac, sym) => { const b = benchFor(ac, sym); if (!(b in benches)) benches[b] = getChart(b, state.interval).then((d) => d.candles).catch(() => null); return benches[b]; };
   const queue = [...list];
   async function worker() {
     while (queue.length) {
@@ -373,7 +381,7 @@ async function scanSymbols(list, onProgress) {
         const S = computeSeries(candles);
         const i = S.c.length - 1;
         const sc = scoreAt(S, i), lab = labelFor(sc.score);
-        const risk = riskReport(candles, S, meta, meta.symbol === benchFor(meta.assetClass) ? null : await getBench(meta.assetClass));
+        const risk = riskReport(candles, S, meta, meta.symbol === benchFor(meta.assetClass, meta.symbol) ? null : await getBench(meta.assetClass, meta.symbol));
         const plan = tradePlan(S, lab, risk, { account: state.account, riskPct: state.riskPct });
         out.push({ symbol: meta.symbol, name: item.name || meta.name, assetClass: meta.assetClass, metaName: meta.name, price: S.c[i], chg: (S.c[i] - S.c[i - 1]) / S.c[i - 1], score: sc.score, ...lab, risk: risk.score, riskLevel: risk.level, vol: risk.annVol, stopPct: plan.stopPct, rsi: S.rsi[i] });
       } catch (e) { out.push({ symbol: item.symbol, name: item.name, error: e.message }); }
@@ -385,7 +393,7 @@ async function scanSymbols(list, onProgress) {
   return out;
 }
 async function runScan() {
-  const list = state.scanSet === 'watchlist' ? state.watchlist : state.scanSet === 'all' ? [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto] : UNIVERSE[state.scanSet];
+  const list = state.scanSet === 'watchlist' ? state.watchlist : state.scanSet === 'world' ? WORLD_SCAN.map((sym) => WORLD.find((w) => w.symbol === sym) || { symbol: sym, name: sym }) : state.scanSet === 'all' ? [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto] : UNIVERSE[state.scanSet];
   if (!list.length) { $('#scanTable').innerHTML = '<tbody><tr><td>Your watchlist is empty.</td></tr></tbody>'; return; }
   const btn = $('#scanBtn'), prog = $('#scanProgress');
   btn.disabled = true; btn.textContent = 'Scanning…'; prog.hidden = false; prog.firstElementChild.style.width = '0';
@@ -509,7 +517,7 @@ async function enrichPositions(positions, onProgress) {
   const syms = [...new Set(positions.map((p) => p.chartSymbol).filter(Boolean))];
   const info = new Map(); let done = 0;
   const benches = {};
-  const getBench = (ac) => { const b = benchFor(ac); return (benches[b] ||= getChart(b, '1d').then((d) => d.candles).catch(() => null)); };
+  const getBench = (ac, sym) => { const b = benchFor(ac, sym); return (benches[b] ||= getChart(b, '1d').then((d) => d.candles).catch(() => null)); };
   const queue = [...syms];
   async function worker() {
     while (queue.length) {
@@ -519,7 +527,7 @@ async function enrichPositions(positions, onProgress) {
         const candles = dedupe(d.candles), meta = { ...d.meta, interval: '1d' };
         const S = computeSeries(candles), i = S.c.length - 1;
         const sc = scoreAt(S, i), lab = labelFor(sc.score);
-        const risk = riskReport(candles, S, meta, meta.symbol === benchFor(meta.assetClass) ? null : await getBench(meta.assetClass));
+        const risk = riskReport(candles, S, meta, meta.symbol === benchFor(meta.assetClass, meta.symbol) ? null : await getBench(meta.assetClass, meta.symbol));
         info.set(sym, { last: S.c[i], prev: S.c[i - 1], atr: S.atr[i], score: sc.score, ...lab, risk: risk.score, riskLevel: risk.level, demo: !!d.demo });
       } catch (e) { info.set(sym, { error: e.message }); }
       onProgress(++done / Math.max(1, syms.length));
@@ -779,6 +787,7 @@ async function renderConnect(d) {
 // ---------- Stock vs crypto profile ----------
 function renderProfile(res, C, ms) {
   const P = C.profile, r = res.risk, other = PROFILES[C.cls === 'crypto' ? 'stock' : 'crypto'];
+  const exI = C.cls === 'crypto' ? null : exchangeOf(res.meta.symbol);
   $('#profCls').outerHTML = `<span id="profCls">${badge(res.meta.symbol, res.meta.assetClass, res.meta.name)}</span>`;
   $('#profWhat').innerHTML = `<b>${esc(P.label)}:</b> ${esc(P.what)}${C.cryptoLinked ? ` <b>Crypto-linked:</b> ${esc(res.meta.symbol)} is a ${esc(C.linkedNote)} — stock-market hours and rules, crypto-style swings.` : ''}${C.leveraged ? ' <b>Leveraged/inverse fund</b> — decays over time.' : ''}`;
   const cv = r.classVol || classVolatility(C.cls, r.annVol);
@@ -789,22 +798,32 @@ function renderProfile(res, C, ms) {
   const corr = r.beta?.corr;
   const rows = [
     ['Market right now', `<span class="mkt ${ms.phase}">${esc(ms.label)}</span><br><small style="color:var(--muted)">${esc(ms.detail)}</small>`, other.trades247 ? 'Open 24/7' : marketStatus('stock').label],
-    ['Trading hours', P.hours, other.hours],
+    ['Trading hours', exI ? `${esc(exI.flag)} ${esc(exI.name)}: ${esc(hoursText(exI.code))}<br><small style="color:var(--muted)">= ${esc(hoursInViewerTz(exI.code, VIEWER_TZ))} your time</small>` : esc(P.hours), other.hours],
     ['Normal volatility', P.typicalVol, other.typicalVol],
-    [`Moves with ${P.benchName}`, corr == null ? (res.meta.symbol === P.benchmark ? 'It is the benchmark' : '—') : `correlation ${corr.toFixed(2)}${r.beta?.beta != null ? `, beta ${r.beta.beta.toFixed(2)}` : ''}`, `benchmark: ${other.benchName}`],
-    ['Settlement', P.settlement, other.settlement],
-    ['Protection', P.protection, other.protection],
+    [exI && exI.code !== 'US' ? `Moves with ${esc(exI.country)} market (${esc(exI.bench)})` : `Moves with ${P.benchName}`, corr == null ? (res.meta.symbol === (exI?.bench || P.benchmark) ? 'It is the benchmark' : '—') : `correlation ${corr.toFixed(2)}${r.beta?.beta != null ? `, beta ${r.beta.beta.toFixed(2)}` : ''}`, `benchmark: ${other.benchName}`],
+    ['Settlement', exI && exI.code !== 'US' ? (/^(SS|SZ)$/.test(exI.code) ? 'T+1 (shares bought today sellable tomorrow)' : 'T+1 or T+2 depending on market') : P.settlement, other.settlement],
+    ['Protection', exI && exI.code !== 'US' ? `Regulated by ${esc(exI.country)}'s market authority. Investor protection depends on your broker and its country (US brokers: SIPC).` : P.protection, other.protection],
     ['Suggested risk per trade', `${P.suggestRiskPct}% of account`, `${other.suggestRiskPct}% of account`],
     ['Stop width', `${P.atrMult}× ATR`, `${other.atrMult}× ATR`],
   ];
   $('#profCompare').innerHTML = `<thead><tr><th></th><th>This ${esc(P.label.toLowerCase())}</th><th>vs ${esc(other.label.toLowerCase())}</th></tr></thead><tbody>` +
     rows.map(([k, v, o]) => `<tr><td>${k}</td><td class="this">${v}</td><td class="other">${esc(o)}</td></tr>`).join('') + '</tbody>';
-  $('#profDrivers').innerHTML = P.drivers.map((d) => `<li>${esc(d)}</li>`).join('');
-  $('#profRisks').innerHTML = P.risks.map((d) => `<li>${esc(d)}</li>`).join('');
+  const intlX = exI && exI.code !== 'US';
+  const drivers = intlX ? ['Company earnings and guidance', `${exI.country}'s economy, interest rates and policy`, `The ${exI.country} market (benchmark ${exI.bench}) and global risk appetite`, `The ${(res.meta.currency || exI.currency).replace(/[pc]$/, '').toUpperCase().slice(0, 3)}/USD exchange rate (for dollar investors)`] : P.drivers;
+  const risks = intlX ? ['Gaps between sessions — and overnight in US time — can jump past a stop', 'Single-company risk: one bad report can drop it 20%+', 'Currency risk on top of price risk', res.meta.marketRule || `Market rules differ from the US — check ${exI.short}'s price limits and settlement`] : P.risks;
+  $('#profDrivers').innerHTML = drivers.map((d) => `<li>${esc(d)}</li>`).join('');
+  $('#profRisks').innerHTML = risks.map((d) => `<li>${esc(d)}</li>`).join('');
   $('#profTip').innerHTML = `<b>Trading ${esc(P.label.toLowerCase())}s:</b> ${esc(P.tip)}`;
 }
 
 // ---------- Scanner market overview ----------
+const WORLD_SCAN = ['AZN.L', 'SHEL.L', 'HSBA.L', 'VOD.L', 'SAP.DE', 'SIE.DE', 'MC.PA', 'ASML.AS', 'NESN.SW', 'NOVO-B.CO', '0700.HK', '9988.HK', '1810.HK', '600519.SS', '300750.SZ', '7203.T', '6758.T', '8035.T', '005930.KS', '2330.TW', 'RELIANCE.NS', 'INFY.NS', 'SHOP.TO', 'RY.TO', 'BHP.AX', 'CBA.AX', 'D05.SI', 'PETR4.SA', 'NPN.JO', '2222.SR'];
+const REGIONS = [['Americas', ['US', 'TO', 'SA', 'MX']], ['Europe & Africa', ['L', 'DE', 'PA', 'AS', 'SW', 'MI', 'MC', 'ST', 'CO', 'OL', 'JO']], ['Asia-Pacific & Middle East', ['HK', 'SS', 'T', 'KS', 'TW', 'NS', 'SI', 'AX', 'NZ', 'SR']]];
+function worldClock() {
+  const all = REGIONS.flatMap(([, c]) => c), open = all.filter((c) => exchangeStatus(c).open).length;
+  const rows = REGIONS.map(([name, codes]) => `<div class="wc-region"><h4>${name}</h4><div class="wc-row">${codes.map((c) => { const x = EXCHANGES[c], st = exchangeStatus(c); return `<span class="wc ${st.phase}" title="${esc(x.name)} — ${esc(st.label)}. ${esc(st.detail)} Hours: ${esc(hoursText(c))} = ${esc(hoursInViewerTz(c, VIEWER_TZ))} your time">${x.flag} ${esc(x.short)}</span>`; }).join('')}</div></div>`).join('');
+  return `<div class="mk-card world" style="--c:#3ddc97"><div class="row"><h3>World stock markets</h3><span class="mkt ${open ? 'open' : 'closed'}">${open} of ${all.length} open now</span></div><p>Times shown for your timezone (${esc(VIEWER_TZ.replace('_', ' '))}). Hover or tap a market for its hours.</p>${rows}</div>`;
+}
 function renderMarkets() {
   const rows = state.scanRows.filter((r) => !r.error);
   const card = (cls, title, sub, benchSym) => {
@@ -816,7 +835,7 @@ function renderMarkets() {
       <p>${esc(ms.detail)} ${esc(sub)}</p>
       <div class="stat">${mine.length ? `${mine.length} scanned · <span class="up">${buys} buy</span> · <span class="down">${sells} sell</span>${bench ? ` · ${esc(benchSym)} <span class="sig tone-${bench.tone}">${bench.label}</span>` : ''}` : 'Run a scan to see breadth.'}</div></div>`;
   };
-  $('#markets').innerHTML = card('stock', 'Stock market', 'Benchmark: S&P 500 (SPY).', 'SPY') + card('crypto', 'Crypto market', 'Benchmark: Bitcoin — most coins follow it.', 'BTC-USD');
+  $('#markets').innerHTML = card('stock', 'US stock market', 'Benchmark: S&P 500 (SPY).', 'SPY') + card('crypto', 'Crypto market', 'Benchmark: Bitcoin — most coins follow it.', 'BTC-USD') + worldClock();
 }
 
 // ---------- Portfolio allocation by class ----------
@@ -919,13 +938,13 @@ async function previewScan() {
   const prog = $('#botProgress'); prog.hidden = false; prog.firstElementChild.style.width = '0';
   const rows = [], queue = [...list]; let done = 0;
   const benches = {};
-  const bench = (ac) => { const b = benchFor(ac); return (benches[b] ||= getChart(b, '1d').then((d) => d.candles).catch(() => null)); };
+  const bench = (ac, sym) => { const b = benchFor(ac, sym); return (benches[b] ||= getChart(b, '1d').then((d) => d.candles).catch(() => null)); };
   await Promise.all(Array.from({ length: 4 }, async () => {
     while (queue.length) {
       const sym = queue.shift();
       try {
         const d = await getChart(sym, '1d'); const meta = { ...d.meta, interval: '1d' };
-        const { learned: L, decision: D, risk } = learnAndDecide(dedupe(d.candles), meta, meta.symbol === benchFor(meta.assetClass) ? null : await bench(meta.assetClass));
+        const { learned: L, decision: D, risk } = learnAndDecide(dedupe(d.candles), meta, meta.symbol === benchFor(meta.assetClass, meta.symbol) ? null : await bench(meta.assetClass, meta.symbol));
         rows.push({ symbol: sym, name: meta.name, assetClass: meta.assetClass, action: D.action, score: D.score ?? L.score ?? 0, buyLine: D.buyLine, sellLine: D.sellLine, pUp: L.model?.pUp, auc: L.model?.auc, analogsP: L.analogs?.pUp, analogsN: L.analogs?.n || 0, oosRet: L.rules?.ok ? L.rules.test.ret : null, oosTrades: L.rules?.ok ? L.rules.test.trades : 0, risk: risk.score, evidence: D.evidence, reason: D.reason });
       } catch { /* skip */ }
       prog.firstElementChild.style.width = `${(++done / list.length) * 100}%`;

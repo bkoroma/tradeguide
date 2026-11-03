@@ -1,3 +1,4 @@
+import { exchangeOf, exchangeStatus } from './markets.js';
 // TradeGuide — asset classes: traditional stocks vs ETFs vs crypto.
 // One place that knows how each market works: hours, normal volatility, what moves it,
 // how it is regulated, and how to size and stop a trade in it. Pure; used by app, engine and bot.
@@ -73,7 +74,8 @@ function etNow(d) {
 }
 const isTradingDay = (day, wd) => wd !== 'Sat' && wd !== 'Sun' && !HOLIDAYS.has(day);
 
-export function marketStatus(cls, d = new Date()) {
+export function marketStatus(cls, d = new Date(), symbol = '') {
+  if (cls !== 'crypto' && symbol) { const ex = exchangeOf(symbol); if (ex && ex.code !== 'US') return exchangeStatus(ex.code, d); }
   if (cls === 'crypto') return { open: true, phase: 'open', label: 'Open 24/7', detail: 'Crypto markets never close — including nights, weekends and holidays.' };
   const { wd, day, mins } = etNow(d);
   const close = EARLY_CLOSE.has(day) ? 13 * 60 : 16 * 60;
@@ -88,7 +90,7 @@ export function marketStatus(cls, d = new Date()) {
     const e = etNow(t);
     if (isTradingDay(e.day, e.wd) && (k > 0 || e.mins < 570)) {
       const reason = HOLIDAYS.has(day) ? 'Holiday' : wd === 'Sat' || wd === 'Sun' ? 'Weekend' : 'Closed';
-      return { open: false, phase: 'closed', label: `Closed · ${reason}`, detail: `Next open ${k === 0 ? 'today' : e.wd} 9:30 AM ET${k > 1 ? ` (${e.day})` : ''}. Prices can gap at the open.` };
+      return { open: false, phase: 'closed', label: reason === 'Closed' ? 'Closed' : `Closed · ${reason}`, detail: `Next open ${k === 0 ? 'today' : e.wd} 9:30 AM ET${k > 1 ? ` (${e.day})` : ''}. Prices can gap at the open.` };
     }
     t = new Date(t.getTime() + 86400e3);
   }

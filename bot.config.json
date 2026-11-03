@@ -31,7 +31,8 @@
       "AVAX-USD",
       "LINK-USD",
       "LTC-USD"
-    ]
+    ],
+    "world": []
   },
   "discover": true,
   "discoverCount": 15,

@@ -1,4 +1,4 @@
-# TradeGuide v1.4 — Stock & Crypto Signals, Risk, Portfolio, Live Trades & Alert Bot
+# TradeGuide v1.6 — Global Stock, ETF & Crypto Signals, Risk, Portfolio, Live Trades & Alert Bot
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bkoroma/tradeguide)
 
@@ -14,10 +14,13 @@ Installable PWA that analyses any stock, ETF or coin and tells you:
 - **"What this asset's history says"** card on every analysis — the same learning engine, live in the browser.
 - **Stocks vs crypto, treated as different markets** — every asset is tagged STOCK / ETF / CRYPTO (plus ₿-LINKED for COIN, MSTR, miners and bitcoin ETFs). Live market status (NYSE hours, pre/after-hours, weekends, holidays and early closes vs crypto's 24/7), volatility judged against its own class, class-specific risk warnings, stop width (2× vs 2.5× ATR) and suggested position risk (1% vs 0.5%), a side-by-side "Stock vs crypto" profile card, separate stock/crypto market panels in the scanner, a stocks-vs-crypto split of your portfolio, and bot rules, alerts, digest and track record split by class.
 - **Every tradable symbol** — search covers all ~12,000 US-listed stocks and ETFs (Nasdaq, NYSE, NYSE American, NYSE Arca, Cboe, IEX — from Nasdaq Trader's official symbol directory, refreshed daily) and every coin trading against USD on Coinbase and Kraken. ETFs are flagged from the directory. `GET /api/universe?class=stock|etf|crypto&offset=&limit=` pages through the full lists.
-- **Scanner** with Stocks (42), ETFs (25), Crypto (25) and All modes, **watchlist** with signal-flip highlighting, 1H / 1D / 1W timeframes, Learn page.
+- **Worldwide markets** — 30+ exchanges: London, Xetra, Paris, Amsterdam, Zurich, Milan, Madrid, Stockholm, Copenhagen, Oslo, Helsinki, Hong Kong, Shanghai, Shenzhen, Tokyo, Seoul, Taipei, India (NSE/BSE), Singapore, Sydney, Auckland, Toronto, São Paulo, Mexico, Johannesburg, Riyadh. Search by company name or any code format (`VOD.L`, `LSE:VOD`, `VOD LN`, `700 HK`, `SHA:600519`). Prices in local currency (pence/cents handled) with a US-dollar equivalent; risk and liquidity judged in dollars; each market's own hours (lunch breaks, Sun–Thu weeks) shown in **your** timezone; market-specific rules (China ±10% limit & T+1, HK board lots, Japan price limits…); beta against the home-country ETF; and the US-listed alternative where one exists (9988.HK → BABA). A live **world market clock** shows which exchanges are open now.
+- **Scanner** with Stocks (42), ETFs (25), Crypto (25), **World (30)** and All modes, **watchlist** with signal-flip highlighting, 1H / 1D / 1W timeframes, Learn page.
 
 Market data works with no keys and fails over automatically (server-side, cached, rate-limited):
 **stocks** Alpaca\* → Tiingo\* → Yahoo → Nasdaq → Stooq · **crypto** Alpaca crypto → Coinbase → Kraken → Yahoo → Binance.US. A source that rate-limits or times out is skipped for a cool-down period; if everything fails the last good chart is served and marked stale. `/api/health` shows which sources are healthy.
+
+**International stocks:** EODHD\* → Twelve Data\* → Yahoo → Stooq (UK, Germany, Japan, Hong Kong). Without a key, international data depends on Yahoo/Stooq, which cloud hosts often can't reach — for dependable worldwide coverage set `EODHD_API_KEY` ([eodhd.com](https://eodhd.com): free key = 20 calls/day for testing; the "EOD All World" plan for real use). It also powers search across every listed security worldwide.
 
 \* **On Render/Netlify/Vercel add a free key** — Yahoo rate-limits cloud servers (HTTP 429). Free [Alpaca](https://alpaca.markets) paper account → `ALPACA_DATA_KEY_ID` + `ALPACA_DATA_SECRET_KEY`, or free [Tiingo](https://www.tiingo.com) token → `TIINGO_API_KEY`. Data-only keys; they don't connect a brokerage. If no API is reachable (e.g. opened as plain static files) the app switches to clearly bannered **DEMO** synthetic data.
 

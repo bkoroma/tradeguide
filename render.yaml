@@ -26,6 +26,10 @@ services:
         sync: false
       - key: TIINGO_API_KEY          # or tiingo.com → free account → API token
         sync: false
+      - key: EODHD_API_KEY           # worldwide stocks (London, Hong Kong, Shanghai, Tokyo…) — eodhd.com
+        sync: false
+      - key: TWELVEDATA_API_KEY      # optional: twelvedata.com
+        sync: false
       # Optional — fill in later in Render → Environment (leave blank to skip)
       - key: SNAPTRADE_CLIENT_ID
         sync: false

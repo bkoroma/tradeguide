@@ -11,9 +11,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -27,7 +25,7 @@
       <span>TradeGuide</span>
     </a>
     <div class="search">
-      <input id="search" type="search" placeholder="Search any US stock, ETF or crypto — AAPL, VOO, BTC…" autocomplete="off" spellcheck="false" aria-label="Search symbols">
+      <input id="search" type="search" placeholder="Search any stock, ETF or crypto worldwide — AAPL, VOD.L, 0700.HK, BTC…" autocomplete="off" spellcheck="false" aria-label="Search symbols">
       <ul id="searchResults" class="search-results" role="listbox" hidden></ul>
     </div>
     <div class="seg" id="intervalSeg" role="group" aria-label="Timeframe">
@@ -131,7 +129,7 @@
           <div class="card-h"><h2>Stock vs crypto — what you're trading</h2><span class="cls" id="profCls"></span></div>
           <p class="prof-what" id="profWhat"></p>
           <div class="volgauge" id="profVol"></div>
-          <div class="table-wrap"><table class="compare" id="profCompare"></table></div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="compare" id="profCompare"></table></div>
           <div class="grid-2 prof-lists">
             <div><h3>What moves it</h3><ul id="profDrivers"></ul></div>
             <div><h3>Risks specific to this market</h3><ul id="profRisks"></ul></div>
@@ -148,7 +146,7 @@
           <div class="card-h"><h2>Has this signal worked here?</h2><span class="pill muted" id="btRange"></span></div>
           <div class="bt-grid" id="btGrid"></div>
           <div id="equityChart" class="chart-sm"></div>
-          <details class="trades"><summary>Trade history</summary><div class="table-wrap"><table id="tradeTable"></table></div></details>
+          <details class="trades"><summary>Trade history</summary><div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table id="tradeTable"></table></div></details>
           <p class="note">Simulated long-only: buy when the score crosses +20, sell when it drops to −20 or a trailing ATR stop is hit; 0.1% fee per side. Past results do not predict future results.</p>
         </article>
       </div>
@@ -163,14 +161,14 @@
       <div class="markets" id="markets"></div>
       <div class="toolbar">
         <div class="seg" id="scanSet">
-          <button data-set="stocks" class="on">Stocks</button><button data-set="etfs">ETFs</button><button data-set="crypto">Crypto</button><button data-set="all">All</button><button data-set="watchlist">Watchlist</button>
+          <button data-set="stocks" class="on">Stocks</button><button data-set="etfs">ETFs</button><button data-set="crypto">Crypto</button><button data-set="world">World</button><button data-set="all">All US + crypto</button><button data-set="watchlist">Watchlist</button>
         </div>
         <label class="check"><input type="checkbox" id="onlyBuys"> Buy signals only</label>
         <label class="check"><input type="checkbox" id="lowRisk"> Risk ≤ 6</label>
         <button class="btn" id="scanBtn">Run scan</button>
       </div>
       <div class="progress" id="scanProgress" hidden><span></span></div>
-      <div class="table-wrap"><table class="scan" id="scanTable"></table></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="scan" id="scanTable"></table></div>
     </section>
 
 
@@ -231,12 +229,12 @@
         </article>
         <article class="card">
           <div class="card-h"><h2>Positions</h2><span class="pill muted" id="pfAsOf"></span></div>
-          <div class="table-wrap"><table class="scan" id="pfTable"></table></div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="scan" id="pfTable"></table></div>
           <p class="note">"Suggested action" is TradeGuide's technical read on each holding, not advice. Trailing stop = price − 3×ATR.</p>
         </article>
         <article class="card">
           <div class="card-h"><h2>Accounts</h2></div>
-          <div class="table-wrap"><table id="acctTable"></table></div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table id="acctTable"></table></div>
         </article>
         <div class="empty small" id="pfEmpty" hidden></div>
       </div>
@@ -273,7 +271,7 @@
         <div class="tiles" id="botTiles"></div>
         <article class="card" id="openCard" hidden>
           <div class="card-h"><h2>Open alerts (paper-tracked)</h2></div>
-          <div class="table-wrap"><table id="openTable"></table></div>
+          <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table id="openTable"></table></div>
         </article>
         <article class="card">
           <div class="card-h"><h2>Recent alerts</h2></div>
@@ -285,7 +283,7 @@
       <article class="card" id="decCard" hidden>
         <div class="card-h"><h2 id="decTitle">Latest scan</h2><span class="pill muted" id="decMeta"></span></div>
         <div class="seg" id="decFilter" style="margin-bottom:10px"><button data-f="all" class="on">All</button><button data-f="stock">Stocks &amp; ETFs</button><button data-f="crypto">Crypto</button></div>
-        <div class="table-wrap"><table class="scan" id="decTable"></table></div>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="scan" id="decTable"></table></div>
         <p class="note">BUY needs: signal above the learned buy line, ≥2 of 3 checks (✓ model on unseen data · ✓ past analog readings · ✓ tuned rules on unseen data), and risk within your limit. WATCH = bullish but the evidence isn't there.</p>
       </article>
     </section>
@@ -294,7 +292,7 @@
     <section id="view-watchlist" class="view">
       <div class="view-h"><h1>Watchlist</h1><p>Saved on this device. Tap ☆ on any analysis to add it. Signal flips are highlighted.</p></div>
       <div id="watchEmpty" class="empty small">Nothing saved yet.</div>
-      <div class="table-wrap"><table class="scan" id="watchTable"></table></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="scan" id="watchTable"></table></div>
     </section>
 
     <!-- LEARN -->
@@ -325,7 +323,7 @@
 
 
       <h2>Stocks vs crypto — they are different markets</h2>
-      <div class="table-wrap"><table class="compare learn-compare">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="compare learn-compare">
         <thead><tr><th></th><th><span class="cls c-stock">STOCK</span></th><th><span class="cls c-crypto">CRYPTO</span></th></tr></thead>
         <tbody>
           <tr><td>What you own</td><td>A share of a company with earnings and assets</td><td>A digital token — no company, earnings or dividends</td></tr>
@@ -339,6 +337,15 @@
           <tr><td>Benchmark</td><td>S&amp;P 500 (SPY)</td><td>Bitcoin (BTC-USD)</td></tr>
         </tbody></table></div>
       <p><b>ETFs</b> are baskets that trade like stocks — usually calmer than single stocks. <b>Crypto-linked stocks and ETFs</b> (COIN, MSTR, miners, spot-bitcoin ETFs like IBIT) trade on the stock market's hours but swing like crypto; TradeGuide flags them.</p>
+
+      <h2>Trading around the world</h2>
+      <p>TradeGuide covers 30+ exchanges. International symbols use the global suffix convention — type a company name, or a code like:</p>
+      <ul>
+        <li>🇬🇧 London <b>VOD.L</b> · 🇩🇪 Xetra <b>SAP.DE</b> · 🇫🇷 Paris <b>MC.PA</b> · 🇳🇱 Amsterdam <b>ASML.AS</b> · 🇨🇭 Zurich <b>NESN.SW</b></li>
+        <li>🇭🇰 Hong Kong <b>0700.HK</b> · 🇨🇳 Shanghai <b>600519.SS</b> / Shenzhen <b>300750.SZ</b> · 🇯🇵 Tokyo <b>7203.T</b> · 🇰🇷 Seoul <b>005930.KS</b> · 🇹🇼 Taipei <b>2330.TW</b></li>
+        <li>🇮🇳 India <b>RELIANCE.NS</b> · 🇸🇬 Singapore <b>D05.SI</b> · 🇦🇺 Sydney <b>BHP.AX</b> · 🇨🇦 Toronto <b>SHOP.TO</b> · 🇧🇷 São Paulo <b>PETR4.SA</b> · 🇿🇦 Johannesburg <b>NPN.JO</b> · 🇸🇦 Riyadh <b>2222.SR</b></li>
+      </ul>
+      <p>Formats like <b>LSE:VOD</b>, <b>VOD LN</b> or <b>700 HK</b> are understood too. Prices are shown in the local currency (London in pence, Johannesburg in cents) with a US-dollar equivalent; risk and liquidity are judged in dollars. Each market has its own hours (many Asian markets pause for lunch), rules (China's ±10% daily limit and T+1, Japan's price limits) and benchmark. When a foreign company also trades in the US (Alibaba → BABA, TSMC → TSM, Toyota → TM), TradeGuide tells you — US listings have US hours and the most reliable data.</p>
 
       <h2>The trade plan</h2>
       <p>The stop goes ~2 ATR away (or just past the recent swing low), targets at 2× and 3× the risk. Position size = <i>account × risk %</i> ÷ <i>distance to stop</i>, capped at 25% of the account. Risking 1% per trade means 10 losses in a row costs about 10% — survivable.</p>

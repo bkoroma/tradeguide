@@ -1,6 +1,7 @@
 // TradeGuide — signal, risk, trade-plan and backtest engine (pure, runs in browser and Node).
 import * as I from './indicators.js';
 import { classify, classVolatility } from './assets.js';
+import { exchangeOf, hoursText, RULES } from './markets.js';
 
 export const ENGINE_VERSION = '1.0.0';
 
@@ -205,7 +206,11 @@ export function riskReport(candles, S, meta, bench) {
   const price = S.c[i];
   const atrPct = S.atr[i] ? S.atr[i] / price : null;
   const vs = S.volSma[i];
-  const dollarVol = vs ? vs * price : null;
+  const fx = Number.isFinite(meta.fxToUSD) && meta.fxToUSD > 0 ? meta.fxToUSD : 1; // quote currency → USD
+  const dollarVol = vs ? vs * price * fx : null; // USD-equivalent traded value per bar
+  const ex = meta.assetClass === 'crypto' ? null : exchangeOf(meta.symbol);
+  const usListed = !ex || ex.code === 'US';
+  const priceUSD = price * fx;
   const hi52 = Math.max(...S.h.slice(-look)), lo52 = Math.min(...S.l.slice(-look));
   const fromHigh = (price - hi52) / hi52;
   const b = beta(candles, bench);
@@ -217,7 +222,7 @@ export function riskReport(candles, S, meta, bench) {
   pts += clamp(-dd.mdd / 0.7, 0, 1) * 2.5;                      // drawdown: 70%→2.5
   if (dollarVol != null && meta.interval !== '1wk') pts += dollarVol < 1e6 ? 1.5 : dollarVol < 1e7 ? 0.8 : dollarVol < 5e7 ? 0.3 : 0;
   if (meta.assetClass === 'crypto') pts += 0.8;
-  if (price < 5 && meta.assetClass !== 'crypto') pts += 0.7;
+  if (priceUSD < 5 && meta.assetClass !== 'crypto' && usListed) pts += 0.7;
   if (b && b.beta > 1.5) pts += 0.5;
   const score = Math.round(clamp(1 + pts, 1, 10) * 10) / 10;
   const level = score <= 3 ? 'Low' : score <= 5 ? 'Moderate' : score <= 7 ? 'High' : score <= 8.5 ? 'Very High' : 'Extreme';
@@ -231,13 +236,13 @@ export function riskReport(candles, S, meta, bench) {
   if (dd.mdd < -0.4) w.push({ sev: 'high', text: `Lost ${pct(-dd.mdd)} peak-to-trough within the last year. Positions here can lose a large share of value quickly.` });
   else if (dd.mdd < -0.2) w.push({ sev: 'med', text: `Fell ${pct(-dd.mdd)} from peak at some point in the last year.` });
   if (var95 != null) w.push({ sev: 'info', text: `On 1 bar in 20, expect a loss of at least ${pct(var95, 1)} (historical 95% VaR); the average of those bad bars is ${pct(cvar95 ?? var95, 1)}.` });
-  if (dollarVol != null && dollarVol < 1e7 && meta.interval !== '1wk') w.push({ sev: 'high', text: `Thin liquidity: about $${fmtBig(dollarVol)} traded per bar. Wide spreads and slippage are likely; stops may fill far from your price.` });
-  if (price < 5 && meta.assetClass !== 'crypto') w.push({ sev: 'high', text: 'Penny-stock territory (under $5): higher manipulation, dilution and delisting risk.' });
+  if (dollarVol != null && dollarVol < 1e7 && meta.interval !== '1wk') w.push({ sev: 'high', text: `Thin liquidity: about $${fmtBig(dollarVol)}${usListed ? '' : ' (USD-equivalent)'} traded per bar. Wide spreads and slippage are likely; stops may fill far from your price.` });
+  if (priceUSD < 5 && meta.assetClass !== 'crypto' && usListed) w.push({ sev: 'high', text: 'Penny-stock territory (under $5): higher manipulation, dilution and delisting risk.' });
   if (S.sma200[i] != null && price < S.sma200[i]) w.push({ sev: 'med', text: 'Trading below its 200-period average — long-term trend is down. Buying here is counter-trend.' });
   if (S.rsi[i] != null && S.rsi[i] > 75) w.push({ sev: 'med', text: `Overbought (RSI ${S.rsi[i].toFixed(0)}). Chasing after a big run raises the odds of buying a short-term top.` });
   if (S.rsi[i] != null && S.rsi[i] < 25) w.push({ sev: 'med', text: `Oversold (RSI ${S.rsi[i].toFixed(0)}). Falling prices can keep falling — "catching a falling knife" risk.` });
   if (Math.abs(chg5) > 0.15) w.push({ sev: 'med', text: `Moved ${chg5 > 0 ? '+' : ''}${pct(chg5)} in the last 5 bars. Sharp moves often partly reverse.` });
-  if (b && b.beta > 1.5) w.push({ sev: 'med', text: `High beta (${b.beta.toFixed(2)}) vs ${meta.assetClass === 'crypto' ? 'Bitcoin' : 'the S&P 500'}: amplifies market drops.` });
+  if (b && b.beta > 1.5) w.push({ sev: 'med', text: `High beta (${b.beta.toFixed(2)}) vs ${meta.assetClass === 'crypto' ? 'Bitcoin' : usListed ? 'the S&P 500' : `its home market (${ex.bench} ETF)`}: amplifies market drops.` });
   // Class-specific warnings: what is different about THIS kind of asset
   const C = classify(meta.symbol, meta.assetClass, meta.name);
   const cv = classVolatility(C.cls, annVol);
@@ -246,14 +251,20 @@ export function riskReport(candles, S, meta, bench) {
     if (b && b.corr != null && meta.symbol !== 'BTC-USD') w.push({ sev: b.corr > 0.7 ? 'med' : 'info', text: b.corr > 0.7 ? `Moves closely with Bitcoin (correlation ${b.corr.toFixed(2)}). Check BTC's trend first — this coin rarely goes against it.` : `Only loosely tied to Bitcoin (correlation ${b.corr.toFixed(2)}) — coin-specific news drives it more.` });
     if (dollarVol != null && dollarVol < 5e7 && meta.interval === '1d') w.push({ sev: 'med', text: 'Smaller coin by trading volume: more prone to pumps, dumps and exchange-specific price gaps.' });
   } else {
-    w.push({ sev: 'info', text: `${C.cls === 'etf' ? 'ETFs' : 'Stocks'} only trade Mon–Fri 9:30–16:00 ET (plus thin extended hours). Overnight and earnings gaps can jump straight past your stop.` });
+    if (usListed) w.push({ sev: 'info', text: `${C.cls === 'etf' ? 'ETFs' : 'Stocks'} only trade Mon–Fri 9:30–16:00 ET (plus thin extended hours). Overnight and earnings gaps can jump straight past your stop.` });
+    else {
+      w.push({ sev: 'info', text: `Listed on ${ex.name} (${ex.flag} ${ex.country}): trades ${hoursText(ex.code)} (${ex.tz.replace('_', ' ')}). Gaps happen between sessions${ex.sessions.length > 1 ? ' and across the lunch break' : ''}.` });
+      if (RULES[ex.code]) w.push({ sev: 'med', text: RULES[ex.code] });
+      if (fx !== 1 || !/^USD$/i.test(meta.currency || '')) w.push({ sev: 'med', text: `Currency risk: priced in ${meta.currency || ex.currency}. For a US-dollar investor, returns also move with the ${(meta.currency || ex.currency).replace(/p$|c$/, '').toUpperCase().slice(0, 3)}/USD exchange rate.` });
+      if (meta.usListing) w.push({ sev: 'info', text: `Also trades in the US as ${meta.usListing} (ADR/US listing) — US hours, USD pricing, and usually easier to buy from a US broker.` });
+    }
     if (C.cryptoLinked) w.push({ sev: 'med', text: `Crypto-linked ${C.cls === 'etf' ? 'ETF' : 'stock'} (${C.linkedNote}): trades on the stock market but swings with Bitcoin — expect crypto-sized moves in a stock wrapper.` });
     if (C.leveraged) w.push({ sev: 'high', text: 'Leveraged or inverse fund: resets daily and decays in choppy markets. Built for short-term trades, not holding.' });
   }
   if (cv.level === 'Extreme') w.push({ sev: 'high', text: `Volatility is extreme even by ${C.cls === 'crypto' ? 'crypto' : C.cls === 'etf' ? 'ETF' : 'stock'} standards (${pct(annVol)} vs typical ${C.profile.typicalVol}).` });
   if (fromHigh < -0.5) w.push({ sev: 'med', text: `Down ${pct(-fromHigh)} from its 1-year high — check for a fundamental reason before buying the dip.` });
 
-  return { score, level, annVol, annRet, sharpe, sortino, var95, cvar95, maxDrawdown: dd.mdd, atrPct, dollarVol, hi52, lo52, fromHigh, beta: b, warnings: w, lookbackBars: look, assetClass: C.cls, classVol: cv, cryptoLinked: C.cryptoLinked, leveraged: C.leveraged };
+  return { score, level, annVol, annRet, sharpe, sortino, var95, cvar95, maxDrawdown: dd.mdd, atrPct, dollarVol, hi52, lo52, fromHigh, beta: b, warnings: w, lookbackBars: look, assetClass: C.cls, classVol: cv, cryptoLinked: C.cryptoLinked, leveraged: C.leveraged, exchange: ex ? ex.code : null, fxToUSD: fx };
 }
 
 export function fmtBig(n) {
@@ -398,5 +409,5 @@ export function fmtPx(x) {
   if (x == null || !isFinite(x)) return '—';
   const a = Math.abs(x);
   const d = a >= 1000 ? 2 : a >= 1 ? 2 : a >= 0.01 ? 4 : 8;
-  return x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+  return x.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 }

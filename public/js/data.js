@@ -1,3 +1,4 @@
+import { WORLD, exchangeOf } from './markets.js';
 // TradeGuide — client data layer: API calls, caching, and clearly-labelled demo data fallback.
 
 const mem = new Map();
@@ -41,7 +42,7 @@ export async function searchSymbols(q) {
     try { return await api('search', { q }); }
     catch (e) { if (!e.noApi) throw e; apiDown = true; }
   }
-  const all = [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto];
+  const all = [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto, ...WORLD];
   const u = q.toUpperCase();
   return all.filter((x) => x.symbol.includes(u) || x.name.toUpperCase().includes(u)).slice(0, 8)
     .map((x) => { const etf = UNIVERSE.etfs.some((e) => e.symbol === x.symbol), c = x.symbol.endsWith('-USD'); return { ...x, type: c ? 'CRYPTOCURRENCY' : etf ? 'ETF' : 'EQUITY', exchange: 'DEMO', assetClass: c ? 'crypto' : etf ? 'etf' : 'stock' }; });
@@ -123,7 +124,7 @@ export function demoChart(symbol, interval = '1d') {
   const known = [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto].find((x) => x.symbol === sym);
   return {
     source: 'DEMO (synthetic data)', demo: true,
-    meta: { symbol: sym, name: (known?.name || sym) + ' (demo)', currency: 'USD', exchange: 'DEMO', quoteType: crypto ? 'CRYPTOCURRENCY' : UNIVERSE.etfs.some((e) => e.symbol === sym) ? 'ETF' : 'EQUITY', assetClass: crypto ? 'crypto' : UNIVERSE.etfs.some((e) => e.symbol === sym) ? 'etf' : 'stock', interval },
+    meta: { symbol: sym, name: ((known || WORLD.find((w) => w.symbol === sym))?.name || sym) + ' (demo)', currency: crypto ? 'USD' : exchangeOf(sym)?.currency || 'USD', exchange: 'DEMO', quoteType: crypto ? 'CRYPTOCURRENCY' : UNIVERSE.etfs.some((e) => e.symbol === sym) ? 'ETF' : 'EQUITY', assetClass: crypto ? 'crypto' : UNIVERSE.etfs.some((e) => e.symbol === sym) ? 'etf' : 'stock', interval },
     candles,
   };
 }
