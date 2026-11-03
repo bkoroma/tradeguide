@@ -146,7 +146,7 @@ async function load(symbol) {
     if (bsym !== meta.symbol) { try { bench = (await getChart(bsym, state.interval)).candles; } catch { /* beta optional */ } }
     if (id !== reqId) return;
     const res = analyze(dedupe(data.candles), meta, bench, { account: state.account, riskPct: state.riskPct });
-    res.source = data.source; res.demo = !!data.demo;
+    res.source = data.source + (data.stale ? ` · STALE (sources busy; from ${new Date(data.staleSince).toLocaleTimeString([], { timeStyle: 'short' })})` : ''); res.demo = !!data.demo;
     state.result = res;
     $('#demoBanner').hidden = !(isDemo() || data.demo);
     render(res);

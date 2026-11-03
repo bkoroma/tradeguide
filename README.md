@@ -15,7 +15,10 @@ Installable PWA that analyses any stock, ETF or coin and tells you:
 - **Stocks vs crypto, treated as different markets** — every asset is tagged STOCK / ETF / CRYPTO (plus ₿-LINKED for COIN, MSTR, miners and bitcoin ETFs). Live market status (NYSE hours, pre/after-hours, weekends, holidays and early closes vs crypto's 24/7), volatility judged against its own class, class-specific risk warnings, stop width (2× vs 2.5× ATR) and suggested position risk (1% vs 0.5%), a side-by-side "Stock vs crypto" profile card, separate stock/crypto market panels in the scanner, a stocks-vs-crypto split of your portfolio, and bot rules, alerts, digest and track record split by class.
 - **Scanner** for 17 large stocks/ETFs and 10 major coins, **watchlist** with signal-flip highlighting, 1H / 1D / 1W timeframes, Learn page.
 
-No API keys needed for market data. Data: Yahoo Finance chart API → fallback Binance.US (crypto) / Stooq (stocks), proxied server-side with caching, input validation and rate limiting. If no API is reachable (e.g. opened as plain static files) the app switches to clearly bannered **DEMO** synthetic data.
+Market data works with no keys and fails over automatically (server-side, cached, rate-limited):
+**stocks** Alpaca\* → Tiingo\* → Yahoo → Nasdaq → Stooq · **crypto** Alpaca crypto → Coinbase → Kraken → Yahoo → Binance.US. A source that rate-limits or times out is skipped for a cool-down period; if everything fails the last good chart is served and marked stale. `/api/health` shows which sources are healthy.
+
+\* **On Render/Netlify/Vercel add a free key** — Yahoo rate-limits cloud servers (HTTP 429). Free [Alpaca](https://alpaca.markets) paper account → `ALPACA_DATA_KEY_ID` + `ALPACA_DATA_SECRET_KEY`, or free [Tiingo](https://www.tiingo.com) token → `TIINGO_API_KEY`. Data-only keys; they don't connect a brokerage. If no API is reachable (e.g. opened as plain static files) the app switches to clearly bannered **DEMO** synthetic data.
 
 ## Put it on the web (Render, ~3 minutes)
 1. Click **Deploy to Render** above (or open `https://render.com/deploy?repo=https://github.com/bkoroma/tradeguide`), sign in with GitHub, and press **Apply**. Optional keys can be left blank.
