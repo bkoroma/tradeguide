@@ -9,7 +9,7 @@ export const CRYPTO_LINKED = {
   HOOD: 'large crypto trading revenue', IBIT: 'spot bitcoin ETF', FBTC: 'spot bitcoin ETF', GBTC: 'spot bitcoin ETF', ARKB: 'spot bitcoin ETF', BITB: 'spot bitcoin ETF',
   BITO: 'bitcoin futures ETF', ETHA: 'spot ether ETF', ETHE: 'spot ether ETF', BITX: '2× bitcoin ETF', CONL: '2× COIN ETF',
 };
-const KNOWN_ETF = new Set(['SPY', 'QQQ', 'IWM', 'DIA', 'VOO', 'VTI', 'IVV', 'VEA', 'VWO', 'AGG', 'BND', 'TLT', 'GLD', 'SLV', 'XLK', 'XLF', 'XLE', 'XLV', 'SMH', 'ARKK', 'TQQQ', 'SQQQ', 'SPXL', 'SOXL', 'UVXY',
+const KNOWN_ETF = new Set(['SPY', 'QQQ', 'IWM', 'DIA', 'VOO', 'VTI', 'IVV', 'VEA', 'VWO', 'AGG', 'BND', 'TLT', 'GLD', 'SLV', 'XLK', 'XLF', 'XLE', 'XLV', 'XLY', 'XLI', 'XLP', 'XLU', 'XLB', 'XLRE', 'XLC', 'SMH', 'SOXX', 'ARKK', 'USO', 'UNG', 'SCHD', 'VUG', 'VTV', 'VIG', 'VYM', 'EFA', 'EEM', 'HYG', 'LQD', 'IEF', 'SHY', 'BND', 'IAU', 'GDX', 'KRE', 'XBI', 'JEPI', 'JEPQ', 'RSP', 'MDY', 'IJH', 'IJR', 'TQQQ', 'SQQQ', 'SPXL', 'SOXL', 'UVXY',
   'IBIT', 'FBTC', 'GBTC', 'ARKB', 'BITB', 'BITO', 'ETHA', 'ETHE', 'BITX', 'CONL']);
 const LEVERAGED_RE = /\b(2x|3x|-2x|-3x|ultra|ultrapro|leveraged|daily (bull|bear)|inverse)\b/i;
 

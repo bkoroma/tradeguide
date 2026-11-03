@@ -70,6 +70,9 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => console.log(`TradeGuide running → http://localhost:${PORT}`));
 
+// Load the full symbol universe (all US stocks/ETFs + USD crypto) in the background at boot
+if (process.env.MARKET_DEMO !== '1') import('./lib/universe.js').then((u) => u.loadUniverse()).then((st) => console.log(`[universe] ${st.stocks.length} stocks/ETFs, ${st.crypto.length} crypto${st.errors.length ? ' — ' + st.errors.join('; ') : ''}`)).catch((e) => console.error('[universe]', e.message));
+
 // Alert bot: runs inside this server when BOT_ENABLED=1 (always-on hosts: VPS, Render, Railway, Fly)
 // Live trade hub: starts at boot when a broker and the access code are configured (LIVE_ENABLED=0 to disable)
 if (process.env.LIVE_ENABLED !== '0' && (process.env.APP_ACCESS_TOKEN || '').trim().length >= 12) {

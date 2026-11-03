@@ -41,26 +41,50 @@ export async function searchSymbols(q) {
     try { return await api('search', { q }); }
     catch (e) { if (!e.noApi) throw e; apiDown = true; }
   }
-  const all = [...UNIVERSE.stocks, ...UNIVERSE.crypto];
+  const all = [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto];
   const u = q.toUpperCase();
   return all.filter((x) => x.symbol.includes(u) || x.name.toUpperCase().includes(u)).slice(0, 8)
-    .map((x) => ({ ...x, type: x.symbol.endsWith('-USD') ? 'CRYPTOCURRENCY' : 'EQUITY', exchange: 'DEMO', assetClass: x.symbol.endsWith('-USD') ? 'crypto' : 'stock' }));
+    .map((x) => { const etf = UNIVERSE.etfs.some((e) => e.symbol === x.symbol), c = x.symbol.endsWith('-USD'); return { ...x, type: c ? 'CRYPTOCURRENCY' : etf ? 'ETF' : 'EQUITY', exchange: 'DEMO', assetClass: c ? 'crypto' : etf ? 'etf' : 'stock' }; });
 }
 
 export const UNIVERSE = {
   stocks: [
     { symbol: 'AAPL', name: 'Apple' }, { symbol: 'MSFT', name: 'Microsoft' }, { symbol: 'NVDA', name: 'NVIDIA' },
     { symbol: 'AMZN', name: 'Amazon' }, { symbol: 'GOOGL', name: 'Alphabet' }, { symbol: 'META', name: 'Meta Platforms' },
-    { symbol: 'TSLA', name: 'Tesla' }, { symbol: 'AMD', name: 'AMD' }, { symbol: 'AVGO', name: 'Broadcom' },
-    { symbol: 'JPM', name: 'JPMorgan Chase' }, { symbol: 'V', name: 'Visa' }, { symbol: 'NFLX', name: 'Netflix' },
-    { symbol: 'COST', name: 'Costco' }, { symbol: 'PLTR', name: 'Palantir' }, { symbol: 'COIN', name: 'Coinbase' },
-    { symbol: 'SPY', name: 'S&P 500 ETF' }, { symbol: 'QQQ', name: 'Nasdaq-100 ETF' },
+    { symbol: 'TSLA', name: 'Tesla' }, { symbol: 'AVGO', name: 'Broadcom' }, { symbol: 'BRK-B', name: 'Berkshire Hathaway' },
+    { symbol: 'JPM', name: 'JPMorgan Chase' }, { symbol: 'V', name: 'Visa' }, { symbol: 'MA', name: 'Mastercard' },
+    { symbol: 'LLY', name: 'Eli Lilly' }, { symbol: 'UNH', name: 'UnitedHealth' }, { symbol: 'XOM', name: 'Exxon Mobil' },
+    { symbol: 'WMT', name: 'Walmart' }, { symbol: 'COST', name: 'Costco' }, { symbol: 'HD', name: 'Home Depot' },
+    { symbol: 'PG', name: 'Procter & Gamble' }, { symbol: 'JNJ', name: 'Johnson & Johnson' }, { symbol: 'NFLX', name: 'Netflix' },
+    { symbol: 'AMD', name: 'AMD' }, { symbol: 'ORCL', name: 'Oracle' }, { symbol: 'CRM', name: 'Salesforce' },
+    { symbol: 'ADBE', name: 'Adobe' }, { symbol: 'INTC', name: 'Intel' }, { symbol: 'QCOM', name: 'Qualcomm' },
+    { symbol: 'BAC', name: 'Bank of America' }, { symbol: 'KO', name: 'Coca-Cola' }, { symbol: 'PEP', name: 'PepsiCo' },
+    { symbol: 'DIS', name: 'Disney' }, { symbol: 'NKE', name: 'Nike' }, { symbol: 'BA', name: 'Boeing' },
+    { symbol: 'UBER', name: 'Uber' }, { symbol: 'SHOP', name: 'Shopify' }, { symbol: 'PLTR', name: 'Palantir' },
+    { symbol: 'COIN', name: 'Coinbase' }, { symbol: 'MSTR', name: 'Strategy (MicroStrategy)' }, { symbol: 'HOOD', name: 'Robinhood' },
+    { symbol: 'SOFI', name: 'SoFi' }, { symbol: 'SMCI', name: 'Super Micro Computer' }, { symbol: 'ARM', name: 'Arm Holdings' },
+  ],
+  etfs: [
+    { symbol: 'SPY', name: 'S&P 500 ETF' }, { symbol: 'QQQ', name: 'Nasdaq-100 ETF' }, { symbol: 'IWM', name: 'Russell 2000 ETF' },
+    { symbol: 'DIA', name: 'Dow Jones ETF' }, { symbol: 'VOO', name: 'Vanguard S&P 500' }, { symbol: 'VTI', name: 'Vanguard Total Market' },
+    { symbol: 'VEA', name: 'Developed Markets' }, { symbol: 'VWO', name: 'Emerging Markets' }, { symbol: 'TLT', name: '20+ Yr Treasury' },
+    { symbol: 'AGG', name: 'US Aggregate Bond' }, { symbol: 'GLD', name: 'Gold' }, { symbol: 'SLV', name: 'Silver' },
+    { symbol: 'USO', name: 'Oil' }, { symbol: 'XLK', name: 'Technology' }, { symbol: 'XLF', name: 'Financials' },
+    { symbol: 'XLE', name: 'Energy' }, { symbol: 'XLV', name: 'Health Care' }, { symbol: 'XLY', name: 'Consumer Discretionary' },
+    { symbol: 'XLI', name: 'Industrials' }, { symbol: 'SMH', name: 'Semiconductors' }, { symbol: 'ARKK', name: 'ARK Innovation' },
+    { symbol: 'IBIT', name: 'iShares Bitcoin Trust' }, { symbol: 'ETHA', name: 'iShares Ethereum Trust' }, { symbol: 'TQQQ', name: 'UltraPro QQQ (3×)' },
+    { symbol: 'SCHD', name: 'US Dividend Equity' },
   ],
   crypto: [
     { symbol: 'BTC-USD', name: 'Bitcoin' }, { symbol: 'ETH-USD', name: 'Ethereum' }, { symbol: 'SOL-USD', name: 'Solana' },
     { symbol: 'XRP-USD', name: 'XRP' }, { symbol: 'BNB-USD', name: 'BNB' }, { symbol: 'ADA-USD', name: 'Cardano' },
     { symbol: 'DOGE-USD', name: 'Dogecoin' }, { symbol: 'AVAX-USD', name: 'Avalanche' }, { symbol: 'LINK-USD', name: 'Chainlink' },
-    { symbol: 'LTC-USD', name: 'Litecoin' },
+    { symbol: 'LTC-USD', name: 'Litecoin' }, { symbol: 'DOT-USD', name: 'Polkadot' }, { symbol: 'BCH-USD', name: 'Bitcoin Cash' },
+    { symbol: 'XLM-USD', name: 'Stellar' }, { symbol: 'SHIB-USD', name: 'Shiba Inu' }, { symbol: 'UNI-USD', name: 'Uniswap' },
+    { symbol: 'AAVE-USD', name: 'Aave' }, { symbol: 'ATOM-USD', name: 'Cosmos' }, { symbol: 'NEAR-USD', name: 'NEAR Protocol' },
+    { symbol: 'APT-USD', name: 'Aptos' }, { symbol: 'ARB-USD', name: 'Arbitrum' }, { symbol: 'SUI-USD', name: 'Sui' },
+    { symbol: 'HBAR-USD', name: 'Hedera' }, { symbol: 'FIL-USD', name: 'Filecoin' }, { symbol: 'ETC-USD', name: 'Ethereum Classic' },
+    { symbol: 'PEPE-USD', name: 'Pepe' },
   ],
 };
 
@@ -96,10 +120,10 @@ export function demoChart(symbol, interval = '1d') {
     candles.push({ t: now - (n - 1 - i) * step, o, h: hi, l: lo, c, v });
     price = c;
   }
-  const known = [...UNIVERSE.stocks, ...UNIVERSE.crypto].find((x) => x.symbol === sym);
+  const known = [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto].find((x) => x.symbol === sym);
   return {
     source: 'DEMO (synthetic data)', demo: true,
-    meta: { symbol: sym, name: (known?.name || sym) + ' (demo)', currency: 'USD', exchange: 'DEMO', quoteType: crypto ? 'CRYPTOCURRENCY' : 'EQUITY', assetClass: crypto ? 'crypto' : 'stock', interval },
+    meta: { symbol: sym, name: (known?.name || sym) + ' (demo)', currency: 'USD', exchange: 'DEMO', quoteType: crypto ? 'CRYPTOCURRENCY' : UNIVERSE.etfs.some((e) => e.symbol === sym) ? 'ETF' : 'EQUITY', assetClass: crypto ? 'crypto' : UNIVERSE.etfs.some((e) => e.symbol === sym) ? 'etf' : 'stock', interval },
     candles,
   };
 }

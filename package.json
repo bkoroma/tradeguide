@@ -1,6 +1,6 @@
 {
   "name": "tradeguide",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "TradeGuide \u2014 stock & crypto signal, risk and trade-plan PWA",
   "type": "module",
   "private": true,

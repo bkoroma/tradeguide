@@ -27,7 +27,7 @@
       <span>TradeGuide</span>
     </a>
     <div class="search">
-      <input id="search" type="search" placeholder="Search stock or crypto — AAPL, NVDA, BTC…" autocomplete="off" spellcheck="false" aria-label="Search symbols">
+      <input id="search" type="search" placeholder="Search any US stock, ETF or crypto — AAPL, VOO, BTC…" autocomplete="off" spellcheck="false" aria-label="Search symbols">
       <ul id="searchResults" class="search-results" role="listbox" hidden></ul>
     </div>
     <div class="seg" id="intervalSeg" role="group" aria-label="Timeframe">
@@ -158,12 +158,12 @@
     <section id="view-scanner" class="view">
       <div class="view-h">
         <h1>Market scanner</h1>
-        <p>Scores a basket of liquid assets with the same engine and ranks them. Tap a row for the full analysis.</p>
+        <p>Scores a basket of the most-traded stocks, ETFs and coins with the same engine and ranks them. Any other symbol — every US-listed stock and ETF and every USD-traded coin — is one search away. Tap a row for the full analysis.</p>
       </div>
       <div class="markets" id="markets"></div>
       <div class="toolbar">
         <div class="seg" id="scanSet">
-          <button data-set="stocks" class="on">Stocks</button><button data-set="crypto">Crypto</button><button data-set="all">Both</button><button data-set="watchlist">Watchlist</button>
+          <button data-set="stocks" class="on">Stocks</button><button data-set="etfs">ETFs</button><button data-set="crypto">Crypto</button><button data-set="all">All</button><button data-set="watchlist">Watchlist</button>
         </div>
         <label class="check"><input type="checkbox" id="onlyBuys"> Buy signals only</label>
         <label class="check"><input type="checkbox" id="lowRisk"> Risk ≤ 6</label>

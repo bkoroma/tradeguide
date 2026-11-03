@@ -385,7 +385,7 @@ async function scanSymbols(list, onProgress) {
   return out;
 }
 async function runScan() {
-  const list = state.scanSet === 'watchlist' ? state.watchlist : state.scanSet === 'all' ? [...UNIVERSE.stocks, ...UNIVERSE.crypto] : UNIVERSE[state.scanSet];
+  const list = state.scanSet === 'watchlist' ? state.watchlist : state.scanSet === 'all' ? [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto] : UNIVERSE[state.scanSet];
   if (!list.length) { $('#scanTable').innerHTML = '<tbody><tr><td>Your watchlist is empty.</td></tr></tbody>'; return; }
   const btn = $('#scanBtn'), prog = $('#scanProgress');
   btn.disabled = true; btn.textContent = 'Scanning…'; prog.hidden = false; prog.firstElementChild.style.width = '0';
@@ -915,7 +915,7 @@ function renderDecisions(rows, title, meta) {
 }
 
 async function previewScan() {
-  const list = [...UNIVERSE.stocks, ...UNIVERSE.crypto, ...state.watchlist].map((x) => x.symbol).filter((s, i, a) => a.indexOf(s) === i);
+  const list = [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto, ...state.watchlist].map((x) => x.symbol).filter((s, i, a) => a.indexOf(s) === i);
   const prog = $('#botProgress'); prog.hidden = false; prog.firstElementChild.style.width = '0';
   const rows = [], queue = [...list]; let done = 0;
   const benches = {};
