@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url';
 import { handleApi } from './lib/market.js';
 
 const PORT = Number(process.env.PORT) || 8787;
+// Render provides the public URL automatically; use it for alert links and broker redirects unless APP_URL is set
+if (!process.env.APP_URL && process.env.RENDER_EXTERNAL_URL) process.env.APP_URL = process.env.RENDER_EXTERNAL_URL;
 const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), 'public');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.txt': 'text/plain' };
 const SECURITY = {

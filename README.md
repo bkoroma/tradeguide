@@ -1,5 +1,7 @@
 # TradeGuide v1.4 — Stock & Crypto Signals, Risk, Portfolio, Live Trades & Alert Bot
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bkoroma/tradeguide)
+
 Installable PWA that analyses any stock, ETF or coin and tells you:
 
 - **Signal** — Strong Buy / Buy / Hold / Sell / Strong Sell from a −100…+100 composite of 7 technical factors (trend + ADX, MACD, RSI, 20-bar breakout, Bollinger %B, Stochastic, Volume/OBV), with a plain-English reason for every factor and a confidence score.
@@ -14,6 +16,14 @@ Installable PWA that analyses any stock, ETF or coin and tells you:
 - **Scanner** for 17 large stocks/ETFs and 10 major coins, **watchlist** with signal-flip highlighting, 1H / 1D / 1W timeframes, Learn page.
 
 No API keys needed for market data. Data: Yahoo Finance chart API → fallback Binance.US (crypto) / Stooq (stocks), proxied server-side with caching, input validation and rate limiting. If no API is reachable (e.g. opened as plain static files) the app switches to clearly bannered **DEMO** synthetic data.
+
+## Put it on the web (Render, ~3 minutes)
+1. Click **Deploy to Render** above (or open `https://render.com/deploy?repo=https://github.com/bkoroma/tradeguide`), sign in with GitHub, and press **Apply**. Optional keys can be left blank.
+2. When the build finishes, the app is live at **`https://tradeguide-XXXX.onrender.com`** (shown at the top of the service page). Open it on your phone and use *Add to Home Screen* to install it.
+3. To unlock Portfolio / Bot / Live trades: Render → your service → **Environment** → copy `APP_ACCESS_TOKEN` and paste it into the app.
+4. Every push to `main` redeploys automatically.
+
+Free plan notes: the service sleeps after ~15 minutes without visits (first load then takes ~30–60 s), so the live trade hub and in-server bot pause while asleep. Run the alert bot on GitHub Actions instead (already included), or switch `plan: free` → `starter` in `render.yaml` for always-on.
 
 ## Run locally
 ```bash

@@ -1,0 +1,32 @@
+# Render Blueprint — one-click deploy: https://render.com/deploy?repo=https://github.com/bkoroma/tradeguide
+# Runs the full TradeGuide server: web app, market-data API, read-only broker connections, live trade stream.
+services:
+  - type: web
+    name: tradeguide
+    runtime: node
+    plan: free            # free: sleeps after ~15 min idle; switch to "starter" for always-on live trades + bot
+    region: virginia
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true      # redeploys on every push to main
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: APP_ACCESS_TOKEN   # your private code to unlock Portfolio / Bot / Live — copy it from Render → Environment
+        generateValue: true
+      - key: LIVE_NOTIFY
+        value: "1"
+      # Optional — fill in later in Render → Environment (leave blank to skip)
+      - key: SNAPTRADE_CLIENT_ID
+        sync: false
+      - key: SNAPTRADE_CONSUMER_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: NTFY_TOPIC
+        sync: false
