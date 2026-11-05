@@ -73,6 +73,9 @@ server.listen(PORT, () => console.log(`TradeGuide running → http://localhost:$
 // Data-source self-test in the log (SELFTEST=0 to skip)
 if (process.env.MARKET_DEMO !== '1' && process.env.SELFTEST !== '0') setTimeout(() => import('./lib/sources.js').then((m) => m.selfTest()).catch((e) => console.error('[selftest]', e.message)), 4000).unref();
 
+// Trade-ideas board: rescans every OPP_REFRESH_MIN (15) while the server is awake (OPP_ENABLED=0 to disable)
+if (process.env.OPP_ENABLED !== '0') import('./lib/opportunities.js').then((m) => m.startOpportunityScheduler()).catch((e) => console.error('[ideas]', e.message));
+
 // Load the full symbol universe (all US stocks/ETFs + USD crypto) in the background at boot
 if (process.env.MARKET_DEMO !== '1') import('./lib/universe.js').then((u) => u.loadUniverse()).then((st) => console.log(`[universe] ${st.stocks.length} stocks/ETFs, ${st.crypto.length} crypto${st.errors.length ? ' — ' + st.errors.join('; ') : ''}`)).catch((e) => console.error('[universe]', e.message));
 

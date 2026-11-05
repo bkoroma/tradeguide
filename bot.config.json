@@ -45,7 +45,9 @@
     "exits": true,
     "watch": false,
     "digest": true,
-    "digestHourET": 17
+    "digestHourET": 17,
+    "upcoming": true,
+    "triggered": true
   },
   "classRules": {
     "stock": {
@@ -63,5 +65,10 @@
       "riskPct": 0.5,
       "minEvidence": 2
     }
+  },
+  "setups": {
+    "minReadiness": 65,
+    "expireDays": 5,
+    "onlyProven": true
   }
 }

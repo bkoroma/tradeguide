@@ -183,3 +183,13 @@ export const liveApi = {
   connect: (broker) => brokerApi('connect', broker ? { provider: 'snaptrade', broker } : { provider: 'snaptrade' }),
   refresh: () => brokerApi('refresh'),
 };
+
+// ---------- Trade ideas board ----------
+export async function getOpportunities() {
+  if (!apiDown) {
+    try { const r = await fetch('/api/opportunities', { cache: 'no-store' }); if ((r.headers.get('content-type') || '').includes('json') && r.ok) return r.json(); if (!r.ok && r.status !== 404) throw new Error(`HTTP ${r.status}`); }
+    catch (e) { if (!(e instanceof TypeError)) throw e; }
+    apiDown = true;
+  }
+  return null; // caller computes locally (static/demo hosting)
+}

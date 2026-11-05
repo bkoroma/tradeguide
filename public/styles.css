@@ -330,6 +330,22 @@ tr.group td { background: var(--bg2); font-family: var(--sans); font-weight: 600
 .wc.open { color: var(--up); border-color: #1b4632; background: #0f2219; }
 .wc.lunch, .wc.pre { color: var(--warn); border-color: #6b4c0a; }
 
+/* Trade ideas */
+.idea-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.idea { background: var(--bg2); border-radius: 12px; padding: 12px; border-left: 3px solid var(--warn); cursor: pointer; display: grid; gap: 6px; }
+.idea.triggered { border-left-color: var(--up); }
+.idea.negative { border-left-color: var(--down); opacity: .8; }
+.idea .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.idea .sym { font-family: var(--mono); font-weight: 600; font-size: 15px; }
+.idea .lbl { font-size: 13px; color: var(--muted); }
+.idea .lv { display: flex; flex-wrap: wrap; gap: 6px 14px; font-family: var(--mono); font-size: 13px; }
+.idea .lv b { color: var(--text); }
+.idea .why { font-size: 12.5px; color: var(--muted); }
+.idea .hist { font-size: 12.5px; }
+.idea .hist.strong, .idea .hist.positive { color: var(--up); } .idea .hist.negative { color: var(--down); } .idea .hist.unproven { color: var(--dim); }
+.ready { height: 5px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.ready span { display: block; height: 100%; background: linear-gradient(90deg, var(--warn), var(--up)); }
+
 @media (min-width: 760px) {
   .toasts { bottom: 20px; }
   .markets { grid-template-columns: 1fr 1fr; }

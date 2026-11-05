@@ -1,6 +1,7 @@
 // TradeGuide — UI controller
 import { analyze, computeSeries, scoreAt, labelFor, riskReport, tradePlan, fmtPx, pctS, fmtBig, ENGINE_VERSION } from './engine.js';
-import { getChart, searchSymbols, UNIVERSE, isDemo, broker, access, samplePortfolio, botApi, liveApi } from './data.js';
+import { getChart, searchSymbols, UNIVERSE, isDemo, broker, access, samplePortfolio, botApi, liveApi, getOpportunities } from './data.js';
+import { findSetups, rankOpportunities } from './setups.js';
 import { learnAndDecide } from './learn.js';
 import { classify, PROFILES, marketStatus, classVolatility } from './assets.js';
 import { exchangeOf, EXCHANGES, WORLD, exchangeStatus, hoursText, hoursInViewerTz, formatMoney, normalizeSymbol } from './markets.js';
@@ -75,6 +76,7 @@ function init() {
   window.addEventListener('hashchange', () => { const s = symFromHash(); if (s && s.toUpperCase() !== state.symbol) load(s.toUpperCase()); });
   initPortfolio();
   initBot();
+  initIdeas();
 
   renderWatch();
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -84,7 +86,7 @@ function show(view) {
   $$('.view').forEach((v) => v.classList.toggle('on', v.id === 'view-' + view));
   $$('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.view === view));
   if (view === 'watchlist') refreshWatch();
-  if (view === 'scanner') renderMarkets();
+  if (view === 'scanner') { renderMarkets(); loadIdeas(); }
   if (view === 'portfolio' && !state.portfolio && access.get()) loadPortfolio();
   if (view === 'bot' && access.get() && $('#botOpen').hidden) loadBot();
   if (view === 'analyze' && state.result) requestAnimationFrame(() => Object.values(charts).forEach((c) => c?.timeScale().fitContent()));
@@ -156,6 +158,7 @@ async function load(symbol) {
     updateWatchAction(meta.symbol, res.signal.action);
     $('#histDecision').innerHTML = '<span class="why">Learning this asset\'s history…</span>'; $('#histEvidence').innerHTML = ''; $('#histPill').textContent = ''; $('#histNote').textContent = '';
     setTimeout(() => { if (id === reqId) renderHistory(learnAndDecide(dedupe(data.candles), meta, bench)); }, 30);
+    setTimeout(() => { if (id === reqId) renderSetups(res, meta); }, 60);
   } catch (e) {
     if (id !== reqId) return;
     $('#analyzeError').hidden = false;
@@ -782,6 +785,61 @@ async function renderConnect(d) {
     const pop = brokerList.filter((b) => POPULAR.test(b.name)).slice(0, 16);
     $('#brokerBtns').innerHTML = pop.map((b) => `<button data-slug="${esc(b.slug)}">${esc(b.name)}<small>${b.maintenance ? '🔧 maintenance' : b.degraded ? '⚠️ degraded' : b.realtime ? '⚡ real-time data' : 'daily sync'}</small></button>`).join('') || '<span class="note">Use "All brokerages…" to pick yours.</span>';
   } catch (e) { $('#brokerBtns').innerHTML = `<span class="note">Couldn't load the brokerage list (${esc(e.message)}). "All brokerages…" still works.</span>`; }
+}
+
+// ---------- Trade ideas ----------
+let ideas = null, ideasTab = 'upcoming', ideasTimer = null, ideasLoading = false, ideasAll = false;
+function ideaItem(x, withSym = true) {
+  const cur = x.currency || 'USD', m = (v) => formatMoney(v, cur);
+  const dist = x.status === 'upcoming' ? `${(x.distPct * 100).toFixed(1)}% away` : x.barsAgo === 0 ? 'triggered today' : `triggered ${x.barsAgo}d ago`;
+  return `<li class="idea ${esc(x.status)} ${x.verdict === 'negative' ? 'negative' : ''}" data-s="${esc(x.symbol || '')}">
+    <div class="top"><span>${withSym ? `<span class="sym">${esc(x.symbol)}</span> ${badge(x.symbol, x.assetClass, x.name, true)} ` : ''}<span class="lbl">${esc(x.icon || '')} ${esc(x.label)}</span></span><span class="lbl">${esc(dist)}${x.risk != null ? ` · risk ${x.risk}/10` : ''}</span></div>
+    <div class="lv"><span>${x.status === 'upcoming' ? 'Buy above' : 'Entry ~'} <b>${m(x.trigger)}</b></span><span>Stop <b class="down">${m(x.stop)}</b> (${(-x.riskPct * 100).toFixed(1)}%)</span><span>Target <b class="up">${m(x.target)}</b> (2R)</span></div>
+    ${x.status === 'upcoming' ? `<div class="ready" title="Readiness ${x.readiness}/100"><span style="width:${x.readiness}%"></span></div>` : ''}
+    <div class="hist ${esc(x.verdict)}">${x.verdict === 'negative' ? '⚠️ ' : x.verdict === 'unproven' ? '' : '✓ '}${esc(x.histText || 'Not enough history on this asset to judge the pattern.')}</div>
+    <div class="why">${esc((x.reasons || []).join(' · '))}</div></li>`;
+}
+function initIdeas() {
+  $('#ideasTab').addEventListener('click', (e) => { const t = e.target.closest('[data-t]')?.dataset.t; if (!t) return; ideasTab = t; ideasAll = false; $$('#ideasTab button').forEach((b) => b.classList.toggle('on', b.dataset.t === t)); renderIdeas(); });
+  $('#ideasList').addEventListener('click', (e) => { if (e.target.closest('#ideasMore')) { ideasAll = true; return renderIdeas(); } const li = e.target.closest('li[data-s]'); if (li?.dataset.s) load(li.dataset.s); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && $('#view-scanner').classList.contains('on')) loadIdeas(); });
+  clearInterval(ideasTimer); ideasTimer = setInterval(() => { if (!document.hidden && $('#view-scanner').classList.contains('on')) loadIdeas(); }, 5 * 60_000);
+}
+async function loadIdeas(force = false) {
+  if (ideasLoading || (!force && ideas && Date.now() - ideas.fetchedAt < 4 * 60_000)) return renderIdeas();
+  ideasLoading = true;
+  try {
+    let b = await getOpportunities();
+    if (!b) b = await localIdeas(); // static hosting: compute in the browser
+    const prev = new Set(JSON.parse((() => { try { return localStorage.getItem('tg:ideas:upcoming') || '[]'; } catch { return '[]'; } })()));
+    for (const x of b.buyNow) if (prev.has(`${x.symbol}:${x.type}`)) toastIdea(x); // an idea you saw coming has now triggered
+    try { localStorage.setItem('tg:ideas:upcoming', JSON.stringify(b.upcoming.map((x) => `${x.symbol}:${x.type}`))); } catch { /* */ }
+    ideas = { ...b, fetchedAt: Date.now() };
+  } catch (e) { $('#ideasMeta').textContent = `couldn't load ideas (${e.message})`; }
+  finally { ideasLoading = false; }
+  renderIdeas();
+}
+async function localIdeas() {
+  const list = [...UNIVERSE.stocks, ...UNIVERSE.etfs, ...UNIVERSE.crypto], rows = [];
+  for (const x of list) { try { const d = await getChart(x.symbol, '1d'); const c = dedupe(d.candles), S = computeSeries(c); rows.push({ symbol: x.symbol, name: x.name, assetClass: d.meta.assetClass, currency: d.meta.currency, price: S.c.at(-1), risk: riskReport(c, S, d.meta, null).score, setups: findSetups(S) }); } catch { /* skip */ } }
+  const r = rankOpportunities(rows);
+  return { at: Date.now(), scanned: rows.length, buyNow: r.buyNow.slice(0, 40).map((s) => ({ ...s, readiness: Math.round(s.readiness) })), upcoming: r.upcoming.slice(0, 60).map((s) => ({ ...s, readiness: Math.round(s.readiness) })), filteredOut: r.filteredOut, local: true };
+}
+function renderIdeas() {
+  if (!ideas) return;
+  const ago = Math.max(0, Math.round((Date.now() - ideas.at) / 60000));
+  $('#ideasMeta').textContent = `${ideas.scanned} scanned · updated ${ago ? ago + ' min ago' : 'just now'}${ideas.refreshing ? ' · refreshing' : ''}`;
+  $$('#ideasTab button').forEach((b) => { const n = (ideas[b.dataset.t] || []).length; b.textContent = `${b.dataset.t === 'upcoming' ? '⏳ Upcoming' : '🔔 Buy now'} (${n})`; b.classList.toggle('on', b.dataset.t === ideasTab); });
+  const rows = ideas[ideasTab] || [];
+  const shown = ideasAll ? rows.slice(0, 40) : rows.slice(0, 8);
+  $('#ideasList').innerHTML = rows.length ? shown.map((x) => ideaItem(x)).join('') + (rows.length > shown.length ? `<li><button class="btn ghost" id="ideasMore" style="width:100%">Show all ${rows.length}</button></li>` : '') : `<li class="empty-feed">${ideasTab === 'buyNow' ? 'Nothing has triggered right now. Check “Upcoming” — those are the next candidates.' : 'No setups forming that have a good track record. Quiet markets are normal.'}</li>`;
+}
+function toastIdea(x) { toast({ side: 'BUY', symbol: x.symbol, chartSymbol: x.symbol, filledQty: '', price: x.trigger, status: 'filled', broker: `🔔 ${x.label} triggered` }); }
+function renderSetups(res) {
+  const st = findSetups(res.S);
+  const all = [...st.triggered, ...st.upcoming].map((x) => ({ ...x, symbol: res.meta.symbol, assetClass: res.meta.assetClass, currency: res.meta.currency, risk: res.risk.score, readiness: Math.round(x.readiness) }));
+  $('#setupCard').hidden = false;
+  $('#setupList').innerHTML = all.length ? all.map((x) => ideaItem(x, false)).join('') : '<li class="empty-feed">No setup is forming on this asset right now. TradeGuide checks for breakouts, pullbacks in uptrends, momentum turns and oversold bounces.</li>';
 }
 
 // ---------- Stock vs crypto profile ----------

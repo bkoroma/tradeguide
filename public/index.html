@@ -97,6 +97,11 @@
           <p class="note" id="histNote"></p>
         </article>
 
+
+        <article class="card setups" id="setupCard" hidden>
+          <div class="card-h"><h2>Trade setups on this asset</h2><span class="pill muted">plan before it triggers</span></div>
+          <ul class="idea-list" id="setupList"></ul>
+        </article>
         <article class="card chart-card">
           <div class="card-h"><h2>Chart</h2>
             <div class="legend"><i class="lg-50"></i>50-MA <i class="lg-200"></i>200-MA <i class="lg-buy"></i>past buy <i class="lg-sell"></i>past sell</div>
@@ -158,6 +163,13 @@
         <h1>Market scanner</h1>
         <p>Scores a basket of the most-traded stocks, ETFs and coins with the same engine and ranks them. Any other symbol — every US-listed stock and ETF and every USD-traded coin — is one search away. Tap a row for the full analysis.</p>
       </div>
+      <article class="card ideas" id="ideasCard">
+        <div class="card-h"><h2>Trade ideas</h2><span class="pill muted" id="ideasMeta">loading…</span></div>
+        <div class="seg" id="ideasTab" style="margin-bottom:10px"><button data-t="upcoming" class="on">⏳ Upcoming</button><button data-t="buyNow">🔔 Buy now</button></div>
+        <ul class="idea-list" id="ideasList"><li class="empty-feed">Scanning the market…</li></ul>
+        <p class="note">Upcoming = setting up, <b>not a buy yet</b> — buy only if price trades above the trigger. Buy now = triggered in the last few days and still near the entry. Each pattern is replayed on that asset's own history; patterns that have lost money there are hidden. Refreshes automatically.</p>
+      </article>
+
       <div class="markets" id="markets"></div>
       <div class="toolbar">
         <div class="seg" id="scanSet">
