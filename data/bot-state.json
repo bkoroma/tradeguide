@@ -3,35 +3,35 @@
  "symbols": {
   "AVAX-USD": {
    "last": {
-    "action": "HOLD",
-    "score": -23.60752083781566,
-    "price": 7.956295,
-    "at": 1794662773640,
-    "pUp": 0.24789270438768213,
-    "auc": 0.5368377483443708,
-    "risk": 8.5
+    "action": "SELL",
+    "score": -45.13826671798283,
+    "price": 7.449,
+    "at": 1794683027584,
+    "pUp": 0.26428204351653617,
+    "auc": 0.5655834216413517,
+    "risk": 7.9
    },
    "pending": {}
   },
   "LINK-USD": {
    "last": {
     "action": "SELL",
-    "score": -43.28028526585616,
-    "price": 9.517,
-    "at": 1794662773640,
-    "pUp": 0.5064368804426357,
-    "auc": 0.5957754629629629,
-    "risk": 7.1
+    "score": -33.25413144105054,
+    "price": 9.10285,
+    "at": 1794683027584,
+    "pUp": 0.4123896666004388,
+    "auc": 0.5836614173228346,
+    "risk": 7.9
    },
    "pending": {}
   },
   "SOL-USD": {
    "last": {
     "action": "SELL",
-    "score": -24.537202204449756,
-    "price": 75.2062,
-    "at": 1794662773640,
-    "pUp": 0.24863768404622555,
+    "score": -36.30208055052648,
+    "price": 72.19575,
+    "at": 1794683027584,
+    "pUp": 0.31618760089615194,
     "auc": 0.6009615384615384,
     "risk": 7.9
    },
@@ -40,10 +40,10 @@
   "ETH-USD": {
    "last": {
     "action": "SELL",
-    "score": -35.70132539974914,
-    "price": 1887.22,
-    "at": 1794662773640,
-    "pUp": 0.2721542484083076,
+    "score": -36.38958616652768,
+    "price": 1829.91,
+    "at": 1794683027584,
+    "pUp": 0.29830027089473876,
     "auc": 0.6930251419302514,
     "risk": 6.2
    },
@@ -52,10 +52,10 @@
   "LTC-USD": {
    "last": {
     "action": "SELL",
-    "score": -37.679103476318524,
-    "price": 47.466,
-    "at": 1794662773640,
-    "pUp": 0.5643745500891645,
+    "score": -34.007081950741394,
+    "price": 45.447,
+    "at": 1794683027584,
+    "pUp": 0.6530978513838999,
     "auc": 0.5773375043448036,
     "risk": 6.9
    },
@@ -64,22 +64,22 @@
   "BTC-USD": {
    "last": {
     "action": "SELL",
-    "score": -36.57388629400785,
-    "price": 66587.81,
-    "at": 1794662773640,
-    "pUp": 0.4466436898040365,
-    "auc": 0.5789473684210527,
-    "risk": 4.9
+    "score": -41.20246464404357,
+    "price": 65567.1505,
+    "at": 1794683027584,
+    "pUp": 0.42141444144742546,
+    "auc": 0.5088480222068008,
+    "risk": 6.4
    },
    "pending": {}
   },
   "BNB-USD": {
    "last": {
     "action": "SELL",
-    "score": -37.704671746503266,
-    "price": 607.57,
-    "at": 1794662773640,
-    "pUp": 0.5284891753291665,
+    "score": -38.23021298961028,
+    "price": 588.68,
+    "at": 1794683027584,
+    "pUp": 0.49932643835130275,
     "auc": 0.32679738562091504,
     "risk": 5.8
    },
@@ -88,10 +88,10 @@
   "XRP-USD": {
    "last": {
     "action": "SELL",
-    "score": -37.29335626684592,
-    "price": 0.988021,
-    "at": 1794662773640,
-    "pUp": 0.35245527072763366,
+    "score": -37.44768686786375,
+    "price": 0.954445,
+    "at": 1794683027584,
+    "pUp": 0.3365727582878179,
     "auc": 0.567986707283301,
     "risk": 8
    },
@@ -100,10 +100,10 @@
   "ADA-USD": {
    "last": {
     "action": "SELL",
-    "score": -36.89254247289102,
-    "price": 0.1607655,
-    "at": 1794662773640,
-    "pUp": 0.5874686945346465,
+    "score": -32.93860505032444,
+    "price": 0.155225,
+    "at": 1794683027584,
+    "pUp": 0.7374166069151556,
     "auc": 0.2961672473867596,
     "risk": 8.1
    },
@@ -112,12 +112,12 @@
   "DOGE-USD": {
    "last": {
     "action": "SELL",
-    "score": -40.940960463441726,
-    "price": 0.06243,
-    "at": 1794662773640,
-    "pUp": 0.3568055759382035,
-    "auc": 0.6374393203883495,
-    "risk": 7.5
+    "score": -41.41558314367461,
+    "price": 0.06003,
+    "at": 1794683027584,
+    "pUp": 0.3179789249132076,
+    "auc": 0.6168082524271845,
+    "risk": 8.3
    },
    "pending": {}
   },
@@ -659,9 +659,9 @@
    "setup": "macd_turn"
   }
  ],
- "lastRun": 1794662773640,
+ "lastRun": 1794683027584,
  "lastReport": {
-  "at": 1794662770676,
+  "at": 1794683026275,
   "classes": [
    "crypto"
   ],
@@ -669,26 +669,26 @@
   "errors": [],
   "decisions": [
    {
-    "symbol": "AVAX-USD",
-    "name": "AVAX / USD",
+    "symbol": "ADA-USD",
+    "name": "ADA / USD",
     "assetClass": "crypto",
     "cryptoLinked": false,
     "source": "list",
     "held": false,
-    "action": "HOLD",
-    "score": -23.60752083781566,
-    "buyLine": 40,
-    "sellLine": -30,
-    "price": 7.956295,
-    "pUp": 0.24789270438768213,
-    "auc": 0.5368377483443708,
-    "analogsP": 0.4689265536723164,
-    "analogsN": 354,
-    "analogsMean": -0.006884254134172654,
-    "oosRet": 0.2112106573093251,
-    "oosBh": -0.14268681644307957,
-    "oosTrades": 1,
-    "risk": 8.5,
+    "action": "SELL",
+    "score": -32.93860505032444,
+    "buyLine": 10,
+    "sellLine": -10,
+    "price": 0.155225,
+    "pUp": 0.7374166069151556,
+    "auc": 0.2961672473867596,
+    "analogsP": 0.3620689655172414,
+    "analogsN": 58,
+    "analogsMean": -0.0401011265115212,
+    "oosRet": -0.11201597310955347,
+    "oosBh": -0.2652766601978511,
+    "oosTrades": 3,
+    "risk": 8.1,
     "riskLevel": "Very High",
     "evidence": [
      {
@@ -699,15 +699,99 @@
      {
       "key": "analogs",
       "pass": false,
+      "bear": true
+     },
+     {
+      "key": "rules",
+      "pass": false,
+      "bear": true
+     }
+    ],
+    "reason": "Signal -33 ≤ learned sell line -10.",
+    "demo": false
+   },
+   {
+    "symbol": "LINK-USD",
+    "name": "LINK / USD",
+    "assetClass": "crypto",
+    "cryptoLinked": false,
+    "source": "list",
+    "held": false,
+    "action": "SELL",
+    "score": -33.25413144105054,
+    "buyLine": 40,
+    "sellLine": -10,
+    "price": 9.10285,
+    "pUp": 0.4123896666004388,
+    "auc": 0.5836614173228346,
+    "analogsP": 0.5096774193548387,
+    "analogsN": 310,
+    "analogsMean": 0.0010268824554634443,
+    "oosRet": 0.33060224391851567,
+    "oosBh": 0.036690780212921936,
+    "oosTrades": 2,
+    "risk": 7.9,
+    "riskLevel": "Very High",
+    "evidence": [
+     {
+      "key": "model",
+      "pass": false,
+      "bear": true
+     },
+     {
+      "key": "analogs",
+      "pass": false,
+      "bear": false
+     },
+     {
+      "key": "rules",
+      "pass": true,
+      "bear": false
+     }
+    ],
+    "reason": "Signal -33 ≤ learned sell line -10.",
+    "demo": false
+   },
+   {
+    "symbol": "LTC-USD",
+    "name": "LTC / USD",
+    "assetClass": "crypto",
+    "cryptoLinked": false,
+    "source": "list",
+    "held": false,
+    "action": "SELL",
+    "score": -34.007081950741394,
+    "buyLine": 10,
+    "sellLine": -30,
+    "price": 45.447,
+    "pUp": 0.6530978513838999,
+    "auc": 0.5773375043448036,
+    "analogsP": 0.5419354838709678,
+    "analogsN": 310,
+    "analogsMean": 0.004286931049250571,
+    "oosRet": -0.13899587518319234,
+    "oosBh": -0.17444141689373283,
+    "oosTrades": 6,
+    "risk": 6.9,
+    "riskLevel": "High",
+    "evidence": [
+     {
+      "key": "model",
+      "pass": true,
+      "bear": false
+     },
+     {
+      "key": "analogs",
+      "pass": false,
       "bear": false
      },
      {
       "key": "rules",
       "pass": false,
-      "bear": false
+      "bear": true
      }
     ],
-    "reason": "No edge right now.",
+    "reason": "Signal -34 ≤ learned sell line -30.",
     "demo": false
    },
    {
@@ -718,17 +802,17 @@
     "source": "list",
     "held": false,
     "action": "SELL",
-    "score": -24.537202204449756,
+    "score": -36.30208055052648,
     "buyLine": 10,
     "sellLine": -10,
-    "price": 75.2062,
-    "pUp": 0.24863768404622555,
+    "price": 72.19575,
+    "pUp": 0.31618760089615194,
     "auc": 0.6009615384615384,
     "analogsP": 0.5026737967914439,
     "analogsN": 187,
     "analogsMean": -0.006667711979832696,
     "oosRet": 0.2129147534616056,
-    "oosBh": -0.22731741998719845,
+    "oosBh": -0.2582473469480012,
     "oosTrades": 6,
     "risk": 7.9,
     "riskLevel": "Very High",
@@ -749,7 +833,7 @@
       "bear": false
      }
     ],
-    "reason": "Signal -25 ≤ learned sell line -10.",
+    "reason": "Signal -36 ≤ learned sell line -10.",
     "demo": false
    },
    {
@@ -760,17 +844,17 @@
     "source": "list",
     "held": false,
     "action": "SELL",
-    "score": -35.70132539974914,
+    "score": -36.38958616652768,
     "buyLine": 10,
     "sellLine": -20,
-    "price": 1887.22,
-    "pUp": 0.2721542484083076,
+    "price": 1829.91,
+    "pUp": 0.29830027089473876,
     "auc": 0.6930251419302514,
     "analogsP": 0.4791666666666667,
     "analogsN": 288,
     "analogsMean": -0.008773445702306752,
     "oosRet": 0.2898001807958448,
-    "oosBh": -0.03975861928603408,
+    "oosBh": -0.06891867138844787,
     "oosTrades": 4,
     "risk": 6.2,
     "riskLevel": "High",
@@ -795,90 +879,6 @@
     "demo": false
    },
    {
-    "symbol": "BTC-USD",
-    "name": "BTC / USD",
-    "assetClass": "crypto",
-    "cryptoLinked": false,
-    "source": "list",
-    "held": false,
-    "action": "SELL",
-    "score": -36.57388629400785,
-    "buyLine": 20,
-    "sellLine": -20,
-    "price": 66587.81,
-    "pUp": 0.4466436898040365,
-    "auc": 0.5789473684210527,
-    "analogsP": 0.5330578512396694,
-    "analogsN": 242,
-    "analogsMean": 0.005269105062210516,
-    "oosRet": 0.14405244316143495,
-    "oosBh": -0.03204137108966165,
-    "oosTrades": 6,
-    "risk": 4.9,
-    "riskLevel": "Moderate",
-    "evidence": [
-     {
-      "key": "model",
-      "pass": false,
-      "bear": true
-     },
-     {
-      "key": "analogs",
-      "pass": false,
-      "bear": false
-     },
-     {
-      "key": "rules",
-      "pass": true,
-      "bear": false
-     }
-    ],
-    "reason": "Signal -37 ≤ learned sell line -20.",
-    "demo": false
-   },
-   {
-    "symbol": "ADA-USD",
-    "name": "ADA / USD",
-    "assetClass": "crypto",
-    "cryptoLinked": false,
-    "source": "list",
-    "held": false,
-    "action": "SELL",
-    "score": -36.89254247289102,
-    "buyLine": 10,
-    "sellLine": -10,
-    "price": 0.1607655,
-    "pUp": 0.5874686945346465,
-    "auc": 0.2961672473867596,
-    "analogsP": 0.3620689655172414,
-    "analogsN": 58,
-    "analogsMean": -0.03961684437533046,
-    "oosRet": -0.11201597310955347,
-    "oosBh": -0.23905192407819376,
-    "oosTrades": 3,
-    "risk": 8.1,
-    "riskLevel": "Very High",
-    "evidence": [
-     {
-      "key": "model",
-      "pass": false,
-      "bear": false
-     },
-     {
-      "key": "analogs",
-      "pass": false,
-      "bear": true
-     },
-     {
-      "key": "rules",
-      "pass": false,
-      "bear": true
-     }
-    ],
-    "reason": "Signal -37 ≤ learned sell line -10.",
-    "demo": false
-   },
-   {
     "symbol": "XRP-USD",
     "name": "XRP / USD",
     "assetClass": "crypto",
@@ -886,17 +886,17 @@
     "source": "list",
     "held": false,
     "action": "SELL",
-    "score": -37.29335626684592,
+    "score": -37.44768686786375,
     "buyLine": 20,
     "sellLine": -10,
-    "price": 0.988021,
-    "pUp": 0.35245527072763366,
+    "price": 0.954445,
+    "pUp": 0.3365727582878179,
     "auc": 0.567986707283301,
     "analogsP": 0.532,
     "analogsN": 250,
     "analogsMean": 0.023167763937407493,
     "oosRet": -0.12458578764390105,
-    "oosBh": -0.2694826967937035,
+    "oosBh": -0.2943079272012096,
     "oosTrades": 7,
     "risk": 8,
     "riskLevel": "Very High",
@@ -921,48 +921,6 @@
     "demo": false
    },
    {
-    "symbol": "LTC-USD",
-    "name": "LTC / USD",
-    "assetClass": "crypto",
-    "cryptoLinked": false,
-    "source": "list",
-    "held": false,
-    "action": "SELL",
-    "score": -37.679103476318524,
-    "buyLine": 10,
-    "sellLine": -30,
-    "price": 47.466,
-    "pUp": 0.5643745500891645,
-    "auc": 0.5773375043448036,
-    "analogsP": 0.5419354838709678,
-    "analogsN": 310,
-    "analogsMean": 0.004286931049250571,
-    "oosRet": -0.13899587518319234,
-    "oosBh": -0.1377656675749318,
-    "oosTrades": 6,
-    "risk": 6.9,
-    "riskLevel": "High",
-    "evidence": [
-     {
-      "key": "model",
-      "pass": true,
-      "bear": false
-     },
-     {
-      "key": "analogs",
-      "pass": false,
-      "bear": false
-     },
-     {
-      "key": "rules",
-      "pass": false,
-      "bear": true
-     }
-    ],
-    "reason": "Signal -38 ≤ learned sell line -30.",
-    "demo": false
-   },
-   {
     "symbol": "BNB-USD",
     "name": "BNB / USD",
     "assetClass": "crypto",
@@ -970,17 +928,17 @@
     "source": "list",
     "held": false,
     "action": "SELL",
-    "score": -37.704671746503266,
+    "score": -38.23021298961028,
     "buyLine": 30,
     "sellLine": -30,
-    "price": 607.57,
-    "pUp": 0.5284891753291665,
+    "price": 588.68,
+    "pUp": 0.49932643835130275,
     "auc": 0.32679738562091504,
     "analogsP": 0.5164835164835165,
     "analogsN": 91,
     "analogsMean": -0.01114864072527648,
     "oosRet": 0.11388253174475227,
-    "oosBh": 0.05715826837416493,
+    "oosBh": 0.02429008908685959,
     "oosTrades": 3,
     "risk": 5.8,
     "riskLevel": "High",
@@ -1005,6 +963,48 @@
     "demo": false
    },
    {
+    "symbol": "BTC-USD",
+    "name": "BTC / USD",
+    "assetClass": "crypto",
+    "cryptoLinked": false,
+    "source": "list",
+    "held": false,
+    "action": "SELL",
+    "score": -41.20246464404357,
+    "buyLine": 40,
+    "sellLine": -10,
+    "price": 65567.1505,
+    "pUp": 0.42141444144742546,
+    "auc": 0.5088480222068008,
+    "analogsP": 0.5398230088495575,
+    "analogsN": 226,
+    "analogsMean": 0.006950283955463608,
+    "oosRet": 0.15654940469131784,
+    "oosBh": -0.04692654612435676,
+    "oosTrades": 2,
+    "risk": 6.4,
+    "riskLevel": "High",
+    "evidence": [
+     {
+      "key": "model",
+      "pass": false,
+      "bear": false
+     },
+     {
+      "key": "analogs",
+      "pass": false,
+      "bear": false
+     },
+     {
+      "key": "rules",
+      "pass": true,
+      "bear": false
+     }
+    ],
+    "reason": "Signal -41 ≤ learned sell line -10.",
+    "demo": false
+   },
+   {
     "symbol": "DOGE-USD",
     "name": "DOGE / USD",
     "assetClass": "crypto",
@@ -1012,19 +1012,19 @@
     "source": "list",
     "held": false,
     "action": "SELL",
-    "score": -40.940960463441726,
+    "score": -41.41558314367461,
     "buyLine": 10,
-    "sellLine": -20,
-    "price": 0.06243,
-    "pUp": 0.3568055759382035,
-    "auc": 0.6374393203883495,
-    "analogsP": 0.3526315789473684,
-    "analogsN": 380,
-    "analogsMean": -0.021842008115432476,
-    "oosRet": 0.06203231024878941,
-    "oosBh": -0.3916390567140908,
-    "oosTrades": 5,
-    "risk": 7.5,
+    "sellLine": -30,
+    "price": 0.06003,
+    "pUp": 0.3179789249132076,
+    "auc": 0.6168082524271845,
+    "analogsP": 0.3848101265822785,
+    "analogsN": 395,
+    "analogsMean": -0.015564995386166677,
+    "oosRet": -0.03432949769735383,
+    "oosBh": -0.4151972722844618,
+    "oosTrades": 4,
+    "risk": 8.3,
     "riskLevel": "Very High",
     "evidence": [
      {
@@ -1039,40 +1039,40 @@
      },
      {
       "key": "rules",
-      "pass": true,
-      "bear": false
+      "pass": false,
+      "bear": true
      }
     ],
-    "reason": "Signal -41 ≤ learned sell line -20.",
+    "reason": "Signal -41 ≤ learned sell line -30.",
     "demo": false
    },
    {
-    "symbol": "LINK-USD",
-    "name": "LINK / USD",
+    "symbol": "AVAX-USD",
+    "name": "AVAX / USD",
     "assetClass": "crypto",
     "cryptoLinked": false,
     "source": "list",
     "held": false,
     "action": "SELL",
-    "score": -43.28028526585616,
+    "score": -45.13826671798283,
     "buyLine": 40,
-    "sellLine": -10,
-    "price": 9.517,
-    "pUp": 0.5064368804426357,
-    "auc": 0.5957754629629629,
-    "analogsP": 0.5016722408026756,
-    "analogsN": 299,
-    "analogsMean": -0.002374201869285563,
-    "oosRet": 0.32513974734978857,
-    "oosBh": 0.08418774208247881,
+    "sellLine": -20,
+    "price": 7.449,
+    "pUp": 0.26428204351653617,
+    "auc": 0.5655834216413517,
+    "analogsP": 0.48011363636363635,
+    "analogsN": 352,
+    "analogsMean": -0.0014851421331119198,
+    "oosRet": 0.0654397654076524,
+    "oosBh": -0.19730603448275863,
     "oosTrades": 2,
-    "risk": 7.1,
+    "risk": 7.9,
     "riskLevel": "Very High",
     "evidence": [
      {
       "key": "model",
       "pass": false,
-      "bear": false
+      "bear": true
      },
      {
       "key": "analogs",
@@ -1085,7 +1085,7 @@
       "bear": false
      }
     ],
-    "reason": "Signal -43 ≤ learned sell line -10.",
+    "reason": "Signal -45 ≤ learned sell line -20.",
     "demo": false
    }
   ],
@@ -1093,7 +1093,7 @@
   "sent": [],
   "store": "file",
   "dryRun": false,
-  "ms": 3284
+  "ms": 1350
  },
  "lastDigestDay": "2026-11-13"
 }
